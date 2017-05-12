@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2154,SC2086,SC2015
 #
 # Set up Sonarqube as a service that starts on boot
 #################################################################
@@ -32,9 +33,9 @@ esac
 
 # Create Sonarqube init script
 printf "Creating service file... "
-install -b -m 755 /dev/null ${SONARINIT} || \
+install -b -m 755 /dev/null "${SONARINIT}" || \
    err_exit 'Failed to create service control file.'
-cat << EOF > ${SONARINIT}
+cat << EOF > "${SONARINIT}"
 #!/bin/sh
 #
 # rc file for SonarQube
@@ -53,7 +54,7 @@ cat << EOF > ${SONARINIT}
 ### END INIT INFO
 #################################################################
 
-su - ${SONARUSER} -c "/usr/bin/sonar \$*"
+su - "${SONARUSER}" -c "/usr/bin/sonar \$*"
 EOF
 
 if [[ $? -eq 0 ]]
@@ -76,5 +77,6 @@ service sonarqube start && echo "Success."  || \
    err_exit 'Failed to start Sonarqube service.'
 
 # Add Sonarqube backup cron job(s)
+# shellcheck disable=SC2016
 (printf '30 22 * * * aws s3 sync ${HOME} s3://%s/backup/$(date "+%%u")\n' \
  ${SONARQUBE_S3_BACKUP}) | crontab -u ${SONARUSER} -

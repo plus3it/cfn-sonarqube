@@ -1,10 +1,11 @@
 #!/bin/sh
+# shellcheck disable=SC2015,SC2086
 #
 # Script to set up Sonarqube so that it consults an PostGreSQL
 # database for activity-tracking.
 #
 #################################################################
-PROGNAME=$(basename $0)
+PROGNAME="$(basename $0)"
 SQBURL="${1:-UNDEF}"
 PGSQLUSER=${SONARQUBE_DBUSER:-UNDEF}
 PGSQLPASS=${SONARQUBE_DBPASS:-UNDEF}
@@ -13,7 +14,7 @@ PGSQLINST=${SONARQUBE_DBINST:-UNDEF}
 
 # Define an error-handler
 function err_exit {
-   logger -s -p kern.crit -t ${PROGNAME} "${1}"
+   logger -s -p kern.crit -t "${PROGNAME}" "${1}"
    exit 1
 }
 
@@ -33,10 +34,11 @@ then
 fi
 
 # Ensure we're properly rooted
-cd $(getent passwd $LOGNAME | cut -d: -f 6)
+# shellcheck disable=SC2046
+cd $(getent passwd $LOGNAME | cut -d: -f 6) || err_exit "Change-dir failed."
 
 # Fetch sonarqube ZIP-bundle
-printf "Fetching ${SQBURL}... "
+printf "Fetching %s..." "${SQBURL}"
 curl -o /tmp/sonarqube.zip -skL "${SQBURL}" && \
    echo "Success." || \
    err_exit 'Failed to fetch Sonarqube ZIP.'
@@ -55,18 +57,18 @@ unzip -qq /tmp/sonarqube.zip && echo "Success." || \
 # ...saving off "DIST" file if appropriate
 if [[ -f ${SQBPROP} ]]
 then
-   mv ${SQBPROP} ${SQBPROP}-DIST
-   touch ${SQBPROP} || err_exit "Failed to create ${SQBPROP}"
-   chcon --reference ${SQBPROP}-DIST ${SQBPROP}
+   mv "${SQBPROP}" "${SQBPROP}-DIST"
+   touch "${SQBPROP}" || err_exit "Failed to create ${SQBPROP}"
+   chcon --reference "${SQBPROP}-DIST" "${SQBPROP}"
 elif [[ -d ${SQBROOT}/conf/ ]]
 then
-   touch ${SQBPROP} || err_exit "Failed to create ${SQBPROP}"
-   chcon --reference ${SQBPROP}/conf ${SQBPROP}
+   touch "${SQBPROP}" || err_exit "Failed to create ${SQBPROP}"
+   chcon --reference "${SQBPROP}/conf" "${SQBPROP}"
 fi
 
 # Write the updated sonarqube properties file
 printf "Writing sonarqube properties file... "
-cat << EOF > ${SQBPROP}
+cat << EOF > "${SQBPROP}"
 sonar.jdbc.username=${PGSQLUSER}
 sonar.jdbc.password=${PGSQLPASS}
 sonar.jdbc.url=jdbc:postgresql://${PGSQLHOST}/${PGSQLINST}
@@ -76,5 +78,6 @@ if [[ $? -eq 0 ]]
 then
    echo "Sonarqube configured."
 else
+   # shellcheck disable=SC2016
    err_exit 'Failed to update parms in ${SQBPROP}'
 fi
