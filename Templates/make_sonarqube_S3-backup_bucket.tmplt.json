@@ -1,0 +1,18 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This template sets up the S3 Bucket used by an Sonarqube instance for backup storage.",
+  "Resources": {
+    "Backups": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "BucketOwnerFullControl",
+      }
+    }
+  },
+  "Outputs": {
+    "BucketName": {
+      "Value": { "Ref": "Backups" },
+      "Description": "Sonarqube S3 backup bucket name."
+    }
+  }
+}
