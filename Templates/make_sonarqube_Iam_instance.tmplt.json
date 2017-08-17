@@ -1,11 +1,29 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "This template sets up the IAM role needed by an Sonarqube instance",
+  "Outputs": {
+    "InstanceRole": {
+      "Value": { "Ref" : "InstanceRole" },
+      "Description" : "Name of the instance role"
+    },
+    "InstanceRoleProfile" : {
+      "Value":  { "Ref" : "InstanceProfile" },
+      "Description" : "Profile of the instance role"
+    },
+    "InstanceRoleArn" : {
+      "Value": { "Fn::GetAtt" : [ "InstanceRole", "Arn" ] },
+      "Description" : "ARN of the instance role"
+    }
+  },
   "Parameters": {
-    "BackupBucket": {
-      "Description": "S3 Bucket to host Sonarqube backups",
-      "Type": "String",
-      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$"
+    "BackupBucketArn": {
+      "Description": "S3 Bucket to host Jira backups",
+      "Type": "String"
+    },
+    "ServiceTld": {
+      "Default": "amazonaws.com",
+      "Description": "TLD of the IAM service-trust.",
+      "Type": "String"
     }
   },
   "Resources": {
@@ -23,16 +41,24 @@
                 "s3:*"
               ],
               "Resource": [
-                { "Fn::Join" : [ "", [
-                  "arn:aws:s3:::",
-                    { "Ref" : "BackupBucket" },
-                    ""
-                ]]},
-                { "Fn::Join" : [ "", [
-                  "arn:aws:s3:::",
-                    { "Ref" : "BackupBucket" },
-                    "/*"
-                ]]}
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      { "Ref" : "BackupBucketArn" },
+                      ""
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      { "Ref" : "BackupBucketArn" },
+                      "/*"
+                    ]
+                  ]
+                }
               ]
             },
             {
@@ -54,13 +80,23 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{
-            "Action": "sts:AssumeRole",
-            "Effect": "Allow",
-            "Principal": {
-              "Service": "ec2.amazonaws.com"
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": {
+                  "Fn::Join": [
+                    ".",
+                    [
+                      "ec2",
+                      { "Ref": "ServiceTld" }
+                    ]
+                  ]
+                }
+              }
             }
-          }]
+          ]
         },
         "Path": "/"
       }
@@ -71,20 +107,6 @@
         "Path": "/",
         "Roles": [ { "Ref" : "InstanceRole" } ]
       }
-    }
-  },
-  "Outputs": {
-    "InstanceRole": {
-      "Value": { "Ref" : "InstanceRole" },
-      "Description" : "Name of the instance role"
-    },
-    "InstanceRoleProfile" : {
-      "Value":  { "Ref" : "InstanceProfile" },
-      "Description" : "Profile of the instance role"
-    },
-    "InstanceRoleArn" : {
-      "Value": { "Fn::GetAtt" : [ "InstanceRole", "Arn" ] },
-      "Description" : "ARN of the instance role"
     }
   }
 }
