@@ -459,6 +459,7 @@
           "PgsqlVersion": { "Ref": "PgsqlVersion" },
           "TargetVPC": { "Ref": "TargetVPC" }
         },
+        "TemplateURL": { "Ref": "RdsTemplateUri" },
       },
       "Type": "AWS::CloudFormation::Stack"
     },
