@@ -4,60 +4,35 @@
     "AssignInstanceRole": {
       "Fn::Not": [
         {
-          "Fn::Equals": [
-            {
-              "Ref": "InstanceProfile"
-            },
-            ""
-          ]
+          "Fn::Equals": [ { "Ref": "InstanceProfile" }, "" ]
         }
       ]
     },
     "AssignPublicIp": {
       "Fn::Not": [
         {
-          "Fn::Equals": [
-            {
-              "Ref": "NoPublicIp"
-            },
-            "true"
-          ]
+          "Fn::Equals": [ { "Ref": "NoPublicIp" }, "true" ]
         }
       ]
     },
     "CreateAppVolume": {
       "Fn::Not": [
         {
-          "Fn::Equals": [
-            {
-              "Ref": "AppVolumeDevice"
-            },
-            ""
-          ]
+          "Fn::Equals": [ { "Ref": "AppVolumeDevice" }, "" ]
         }
       ]
     },
     "Reboot": {
       "Fn::Not": [
         {
-          "Fn::Equals": [
-            {
-              "Ref": "NoReboot"
-            },
-            "true"
-          ]
+          "Fn::Equals": [ { "Ref": "NoReboot" }, "true" ]
         }
       ]
     },
     "UseCfnUrl": {
       "Fn::Not": [
         {
-          "Fn::Equals": [
-            {
-              "Ref": "CfnEndpointUrl"
-            },
-            ""
-          ]
+          "Fn::Equals": [ { "Ref": "CfnEndpointUrl" }, "" ]
         }
       ]
     }
@@ -68,98 +43,98 @@
       "ParameterGroups": [
         {
           "Label": {
-            "default": "Application Info"
-          },
-	  "Parameters": [
-	    "SonarSrcUrl",
-	    "SonarInitSetupUrl",
-	    "SonarAppSetupUrl",
-	    "SonarUser",
-	    "AppVolumeSize",
-	    "AppVolumeType",
-	    "AppVolumeDevice",
-	    "AppVolumeMountPath"
-	  ]
-	},
-        {
-          "Label": {
             "default": "Instance Attributes"
           },
           "Parameters": [
             "Hostname",
             "Domainname",
             "AmiId",
-	    "InstanceType",
+            "InstanceType",
+            "SubnetIds",
+            "NoPublicIp",
             "ProvisionUser",
             "KeyPairName",
             "AdminPubkeyURL",
-            "NoPublicIp",
             "SecurityGroupIds",
-            "SubnetIds",
-	    "InstanceProfile",
-	    "NoReboot"
+            "InstanceProfile",
+            "NoReboot"
           ]
-	},
+        },
+        {
+          "Label": {
+            "default": "Application Info"
+          },
+          "Parameters": [
+            "SonarSrcUrl",
+            "SonarInitSetupUrl",
+            "SonarAppSetupUrl",
+            "SonarUser",
+            "AppVolumeSize",
+            "AppVolumeType",
+            "AppVolumeDevice",
+            "AppVolumeMountPath"
+          ]
+        },
         {
           "Label": {
             "default": "DB Connection Info"
           },
           "Parameters": [
-	    "SonarDbHost",
-	    "SonarDbInst",
-	    "SonarDbUser",
-	    "SonarDbPass"
-	  ]
+            "SonarDbHost",
+            "SonarDbInst",
+            "SonarDbUser",
+            "SonarDbPass"
+          ]
         }
       ],
       "ParameterLabels": {
         "AdminPubkeyURL": {
-	  "default": "Supplemental admin SSH Keys"
+          "default": "Supplemental admin SSH Keys"
         },
         "AppVolumeDevice": {
-	  "default": "Sonarqube $HOME dev-node"
+          "default": "Sonarqube $HOME dev-node"
         },
         "AppVolumeMountPath": {
-	  "default": "Sonarqube $HOME location"
+          "default": "Sonarqube $HOME location"
         },
         "AppVolumeSize": {
-	  "default": "Sonarqube $HOME size"
+          "default": "Sonarqube $HOME size"
         },
         "AppVolumeType": {
-	  "default": "Sonarqube $HOME EBS type"
+          "default": "Sonarqube $HOME EBS type"
         },
         "KeyPairName": {
-	  "default": "Default login's SSH Key"
+          "default": "Default login's SSH Key"
         },
         "NoPublicIp": {
-	  "default": "Disable public IP"
+          "default": "Disable public IP"
         },
         "NoReboot": {
-	  "default": "Disable auto-reboot"
+          "default": "Disable auto-reboot"
         },
         "ProvisionUser": {
-	  "default": "Default login account"
+          "default": "Default login account"
         },
         "SonarDbHost": {
-	  "default": "Database FQDN"
+          "default": "Database FQDN"
         },
         "SonarDbInst": {
-	  "default": "Database Instance-name"
+          "default": "Database Instance-name"
         },
         "SonarDbUser": {
-	  "default": "Database master-user"
+          "default": "Database master-user"
         },
         "SonarDbPass": {
-	  "default": "Database master password"
+          "default": "Database master password"
         },
         "SonarSrcUrl": {
-	  "default": "URL of Sonarqube ZIP"
+          "default": "URL of Sonarqube ZIP"
         },
         "SonarInitSetupUrl": {
-	  "default": "URL of Sonarqube pre-config script"
+          "default": "URL of Sonarqube pre-config script"
         },
         "SonarAppSetupURL": {
-	  "default": "URL of Sonarqube app-config script"
+          "default": "URL of Sonarqube app-config script"
         }
       }
     }
@@ -388,14 +363,10 @@
                     [
                       "[main]\n",
                       "stack=",
-                      {
-                        "Ref": "AWS::StackId"
-                      },
+                      { "Ref": "AWS::StackId" },
                       "\n",
                       "region=",
-                      {
-                        "Ref": "AWS::Region"
-                      },
+                      { "Ref": "AWS::Region" },
                       "\n",
                       {
                         "Fn::If": [
@@ -405,9 +376,7 @@
                               "",
                               [
                                 "role=",
-                                {
-                                  "Ref": "InstanceProfile"
-                                },
+                                { "Ref": "InstanceProfile" },
                                 "\n"
                               ]
                             ]
@@ -423,9 +392,7 @@
                               "",
                               [
                                 "url=",
-                                {
-                                  "Ref": "CfnEndpointUrl"
-                                },
+                                { "Ref": "CfnEndpointUrl" },
                                 "\n"
                               ]
                             ]
@@ -450,9 +417,7 @@
                       "path=Resources.CfnLaunchConfig.Metadata\n",
                       "action=/opt/aws/bin/cfn-init -v -c update",
                       " --stack ",
-                      {
-                        "Ref": "AWS::StackName"
-                      },
+                      { "Ref": "AWS::StackName" },
                       " --resource SonarqubeEC2",
                       {
                         "Fn::If": [
@@ -462,9 +427,7 @@
                               "",
                               [
                                 " --role ",
-                                {
-                                  "Ref": "InstanceProfile"
-                                }
+                                { "Ref": "InstanceProfile" }
                               ]
                             ]
                           },
@@ -479,9 +442,7 @@
                               "",
                               [
                                 " --url ",
-                                {
-                                  "Ref": "CfnEndpointUrl"
-                                }
+                                { "Ref": "CfnEndpointUrl" }
                               ]
                             ]
                           },
@@ -521,7 +482,7 @@
       "Properties": {
         "BlockDeviceMappings": [
           {
-            "DeviceName": "/dev/xvda",
+            "DeviceName": "/dev/sda1",
             "Ebs": {
               "DeleteOnTermination": "true",
               "VolumeSize": "20",
@@ -532,45 +493,27 @@
             "Fn::If": [
               "CreateAppVolume",
               {
-                "DeviceName": {
-                  "Ref": "AppVolumeDevice"
-                },
+                "DeviceName": { "Ref": "AppVolumeDevice" },
                 "Ebs": {
                   "DeleteOnTermination": "true",
-                  "VolumeSize": {
-                    "Ref": "AppVolumeSize"
-                  },
-                  "VolumeType": {
-                    "Ref": "AppVolumeType"
-                  }
+                  "VolumeSize": { "Ref": "AppVolumeSize" },
+                  "VolumeType": { "Ref": "AppVolumeType" }
                 }
               },
-              {
-                "Ref": "AWS::NoValue"
-              }
+              { "Ref": "AWS::NoValue" }
             ]
           }
         ],
         "IamInstanceProfile": {
           "Fn::If": [
             "AssignInstanceRole",
-            {
-              "Ref": "InstanceProfile"
-            },
-            {
-              "Ref": "AWS::NoValue"
-            }
+            { "Ref": "InstanceProfile" },
+            { "Ref": "AWS::NoValue" }
           ]
         },
-        "ImageId": {
-          "Ref": "AmiId"
-        },
-        "InstanceType": {
-          "Ref": "InstanceType"
-        },
-        "KeyName": {
-          "Ref": "KeyPairName"
-        },
+        "ImageId": { "Ref": "AmiId" },
+        "InstanceType": { "Ref": "InstanceType" },
+        "KeyName": { "Ref": "KeyPairName" },
         "NetworkInterfaces": [
           {
             "AssociatePublicIpAddress": {
@@ -581,12 +524,8 @@
               ]
             },
             "DeviceIndex": "0",
-            "GroupSet": {
-              "Ref": "SecurityGroupIds"
-            },
-            "SubnetId": {
-              "Ref": "SubnetIds"
-            }
+            "GroupSet": { "Ref": "SecurityGroupIds" },
+            "SubnetId": { "Ref": "SubnetIds" }
           }
         ],
         "Tags": [
@@ -596,9 +535,7 @@
               "Fn::Join": [
                 "",
                 [
-                  {
-                    "Ref": "AWS::StackName"
-                  }
+                  { "Ref": "AWS::StackName" }
                 ]
               ]
             }
@@ -614,24 +551,16 @@
                 "system_info:\n",
                 "  default_user:\n",
                 "    name: ",
-                {
-                  "Ref": "ProvisionUser"
-                },
+                { "Ref": "ProvisionUser" },
                 "\n",
                 "\n",
                 "hostname: ",
-                {
-                  "Ref": "Hostname"
-                },
+                { "Ref": "Hostname" },
                 "\n",
                 "fqdn: ",
-                {
-                  "Ref": "Hostname"
-                },
+                { "Ref": "Hostname" },
                 ".",
-                {
-                  "Ref": "Domainname"
-                },
+                { "Ref": "Domainname" },
                 "\n",
                 "manage_etc_hosts: true\n",
                 "\n",
@@ -645,22 +574,16 @@
                 "\n",
                 "bootcmd:\n",
                 "  - cloud-init-per instance mkfs-appvolume mkfs -t ext4 ",
-                {
-                  "Ref": "AppVolumeDevice"
-                },
+                { "Ref": "AppVolumeDevice" },
                 "\n",
                 "\n",
                 "mounts:\n",
                 "  - [ ",
                 "\"",
-                {
-                  "Ref": "AppVolumeDevice"
-                },
+                { "Ref": "AppVolumeDevice" },
                 "\", ",
                 "\"",
-                {
-                  "Ref": "AppVolumeMountPath"
-                },
+                { "Ref": "AppVolumeMountPath" },
                 "\", ",
                 "\"auto\" ",
                 "]\n",
@@ -672,6 +595,10 @@
                 "\n",
                 "runcmd:\n",
                 "  - |-\n",
+                "      # Export cert bundle ENVs\n",
+                "      export AWS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt\n",
+                "      export REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt\n",
+                "      \n",
                 "      # Set up envs used by build-scripts\n",
                 "      export SONARQUBE_S3_BACKUP=",
                        { "Ref": "BackupBucket" },
@@ -697,62 +624,40 @@
                 "         echo \"${1}\"\n",
                 "         logger -p kern.crit -t UserData \"${1}\"\n",
                 "         /opt/aws/bin/cfn-signal -e 1 --stack ",
-                {
-                  "Ref": "AWS::StackName"
-                },
+                { "Ref": "AWS::StackName" },
                 " --resource SonarqubeEC2\n",
                 "         exit 1\n",
                 "      }\n",
                 "      \n",
                 "      # Install RPMs needed by the cfn-tools.\n",
                 "      yum --enablerepo=",
-                {
-                  "Ref": "EpelRepo"
-                },
-                " install -y ",
-                {
-                  "Ref": "PyStache"
-                },
-                " ",
-                {
-                  "Ref": "PipRpm"
-                },
-                " || err_exit 'Could not install Cfn dependencies.'\n",
-                "    \n",
+                       { "Ref": "EpelRepo" },
+                       " install -y ",
+                       { "Ref": "PyStache" },
+                       " ",
+                       { "Ref": "PipRpm" },
+                       " || err_exit 'Could not install Cfn dependencies.'\n",
+                "      \n",
                 "      # Initialize the Cfn subsystems\n",
                 "      /opt/aws/bin/cfn-init -s ",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                " -r SonarqubeEC2 ",
-                " --region ",
-                {
-                  "Ref": "AWS::Region"
-                },
-                " && echo 'Successfully ran cfn-init'",
-                " || err_exit 'Failed to run cfn-init' > /dev/stderr\n",
-                "    \n",
-                "      # Export cert bundle ENVs\n",
-                "      export AWS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt\n",
-                "      export REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt\n",
+                       { "Ref": "AWS::StackName" },
+                       " -r SonarqubeEC2 ",
+                       " --region ",
+                       { "Ref": "AWS::Region" },
+                       " && echo 'Successfully ran cfn-init'",
+                       " || err_exit 'Failed to run cfn-init' > /dev/stderr\n",
                 "      \n",
                 "      # Do pip-stuff\n",
                 "      pip install -i ",
-                {
-                  "Ref": "PipIndexFips"
-                },
-                " --upgrade pip\n",
+                       { "Ref": "PipIndexFips" },
+                       " --upgrade pip\n",
                 "      \n",
                 "      # Add admin SSH keys to the ",
-                {
-                  "Ref": "ProvisionUser"
-                },
-                " account\n",
+                       { "Ref": "ProvisionUser" },
+                       " account\n",
                 "      export PROVHOME=/home/",
-                     {
-                       "Ref": "ProvisionUser"
-                     },
-                     "\n",
+                       { "Ref": "ProvisionUser" },
+                       "\n",
                 "      if [[ ! -d ${PROVHOME}/.ssh ]]\n",
                 "      then\n",
                 "         printf \"Waiting for ${PROVHOME}/.ssh to be created\"\n",
@@ -765,9 +670,7 @@
                 "      fi\n",
                 "      \n",
                 "      curl -skL ",
-                       {
-                         "Ref": "AdminPubkeyURL"
-                       },
+                       { "Ref": "AdminPubkeyURL" },
                        " >> ${PROVHOME}/.ssh/authorized_keys || ",
                        "err_exit 'Failed to install admin-users keys'\n",
                 "      \n",
@@ -797,8 +700,8 @@
                 "      su ",
                           { "Ref": "SonarUser" },
                           " -c \"bash /tmp/sonar-setup.sh ",
-                       { "Ref": "SonarSrcUrl" },
-                       "\" || err_exit 'Sonarqube setup script failed.'\n",
+                          { "Ref": "SonarSrcUrl" },
+                          "\" || err_exit 'Sonarqube setup script failed.'\n",
                 "      \n",
                 "      curl -skL ",
                           { "Ref": "SonarInitSetupUrl" },
@@ -806,14 +709,10 @@
                 "      \n",
                 "      # Signal Cfn that we're good\n",
                 "      /opt/aws/bin/cfn-signal -e 0 --stack ",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                " --resource SonarqubeEC2 --url ",
-                {
-                  "Ref": "CfnEndpointUrl"
-                },
-                "\n"
+                       { "Ref": "AWS::StackName" },
+                       " --resource SonarqubeEC2 --url ",
+                       { "Ref": "CfnEndpointUrl" },
+                       "\n"
               ]
             ]
           }
