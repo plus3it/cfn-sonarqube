@@ -57,6 +57,7 @@ cat << EOF > "${SONARINIT}"
 su - "${SONARUSER}" -c "/usr/bin/sonar \$*"
 EOF
 
+# shellcheck disable=SC2181
 if [[ $? -eq 0 ]]
 then
    echo "Success."

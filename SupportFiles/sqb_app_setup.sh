@@ -74,6 +74,7 @@ sonar.jdbc.password=${PGSQLPASS}
 sonar.jdbc.url=jdbc:postgresql://${PGSQLHOST}/${PGSQLINST}
 EOF
 
+# shellcheck disable=SC2181
 if [[ $? -eq 0 ]]
 then
    echo "Sonarqube configured."
