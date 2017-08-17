@@ -80,6 +80,11 @@
     }
   },
   "Parameters": {
+    "SonarqubeBackupBucket": {
+      "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
+      "Type": "String",
+      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$"
+    },
     "BucketTemplate": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URI for the template that creates SonarQube's S3 bucket(s).",
@@ -357,6 +362,9 @@
   "Resources": {
     "BackupBucketRes": {
       "Properties": {
+	"Parameters": {
+	  "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" }
+	},
         "TemplateURL": { "Ref": "BucketTemplate" },
         "TimeoutInMinutes": "10"
       },
@@ -428,8 +436,8 @@
     "IamRes": {
       "Properties": {
         "Parameters": {
-          "BackupBucket": {
-            "Fn::GetAtt": [ "BackupBucketRes", "Outputs.BucketName" ]
+          "BackupBucketArn": {
+            "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketArn" ]
           }
         },
         "TemplateURL": { "Ref": "IamTemplate" },
@@ -459,7 +467,7 @@
           "PgsqlVersion": { "Ref": "PgsqlVersion" },
           "TargetVPC": { "Ref": "TargetVPC" }
         },
-        "TemplateURL": { "Ref": "RdsTemplateUri" },
+        "TemplateURL": { "Ref": "RdsTemplateUri" }
       },
       "Type": "AWS::CloudFormation::Stack"
     },
