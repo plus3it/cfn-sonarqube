@@ -380,7 +380,7 @@
           "AppVolumeSize": { "Ref": "AppVolumeSize" },
           "AppVolumeType": { "Ref": "AppVolumeType" },
           "BackupBucket": {
-            "Fn::GetAtt": [ "BackupBucketRes", "Outputs.BucketName" ]
+            "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketName" ]
           },
           "CfnEndpointUrl": {
             "Fn::Join": [
@@ -426,7 +426,7 @@
           "SonarInitSetupUrl": { "Ref": "SonarInitSetupUrl" },
           "SonarSrcUrl": { "Ref": "SonarSrcUrl" },
           "SonarUser": { "Ref": "SonarUser" },
-          "SubnetId": { "Ref": "SubnetId" }
+          "SubnetIds": { "Ref": "SubnetId" }
         },
         "TemplateURL": { "Ref": "Ec2Template" },
         "TimeoutInMinutes": "10"
