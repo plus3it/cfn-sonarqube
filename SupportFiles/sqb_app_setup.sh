@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # shellcheck disable=SC2015,SC2086
 #
 # Script to set up Sonarqube so that it consults an PostGreSQL
@@ -7,6 +7,11 @@
 #################################################################
 PROGNAME="$(basename $0)"
 SQBURL="${1:-UNDEF}"
+while read -r SQENV
+do
+   # shellcheck disable=SC2163
+   export "${SQENV}"
+done < /etc/cfn/Sonarqube.envs
 PGSQLUSER=${SONARQUBE_DBUSER:-UNDEF}
 PGSQLPASS=${SONARQUBE_DBPASS:-UNDEF}
 PGSQLHOST=${SONARQUBE_DBHOST:-UNDEF}
@@ -46,12 +51,14 @@ curl -o /tmp/sonarqube.zip -skL "${SQBURL}" && \
 # Set more vars..
 SQBROOT=$(unzip -qql /tmp/sonarqube.zip | head -n1 | 
           tr -s ' ' | cut -d' ' -f5-)
-SQBPROP=${SQBROOT}/conf/sonar.properties
+SQBPROP=sonarqube/conf/sonar.properties
 
 # De-archive Sonarqube ZIP-bundle
 printf "Unzipping Sonarqube... "
 unzip -qq /tmp/sonarqube.zip && echo "Success." || \
    err_exit 'Failed to de-archive Sonarqube ZIP.'
+printf "Renaming dir..."
+mv "${SQBROOT}" sonarqube
 
 # Create null Sonar properties file with proper SEL contexts
 # ...saving off "DIST" file if appropriate
