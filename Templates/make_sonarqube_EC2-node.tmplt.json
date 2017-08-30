@@ -3,37 +3,27 @@
   "Conditions": {
     "AssignInstanceRole": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [ { "Ref": "InstanceProfile" }, "" ]
-        }
+        { "Fn::Equals": [ { "Ref": "InstanceProfile" }, "" ] }
       ]
     },
     "AssignPublicIp": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [ { "Ref": "NoPublicIp" }, "true" ]
-        }
+        { "Fn::Equals": [ { "Ref": "NoPublicIp" }, "true" ] }
       ]
     },
     "CreateAppVolume": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [ { "Ref": "AppVolumeDevice" }, "" ]
-        }
+        { "Fn::Equals": [ { "Ref": "AppVolumeDevice" }, "" ] }
       ]
     },
     "Reboot": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [ { "Ref": "NoReboot" }, "true" ]
-        }
+        { "Fn::Equals": [ { "Ref": "NoReboot" }, "true" ] }
       ]
     },
     "UseCfnUrl": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [ { "Ref": "CfnEndpointUrl" }, "" ]
-        }
+        { "Fn::Equals": [ { "Ref": "CfnEndpointUrl" }, "" ] }
       ]
     }
   },
@@ -618,6 +608,9 @@
                 "      export SONAR_USER=\"",
                        { "Ref": "SonarUser" },
                        "\"\n",
+                "      export SONARQUBE_ZIP=\"",
+                       { "Ref": "SonarSrcUrl" },
+                       "\"\n",
                 "      \n",
                 "      # Helper function\n",
                 "      function err_exit {\n",
@@ -638,6 +631,11 @@
                        { "Ref": "PipRpm" },
                        " || err_exit 'Could not install Cfn dependencies.'\n",
                 "      \n",
+                "      # Do pip-stuff\n",
+                "      pip install -i ",
+                       { "Ref": "PipIndexFips" },
+                       " --upgrade pip\n",
+                "      \n",
                 "      # Initialize the Cfn subsystems\n",
                 "      /opt/aws/bin/cfn-init -s ",
                        { "Ref": "AWS::StackName" },
@@ -646,11 +644,6 @@
                        { "Ref": "AWS::Region" },
                        " && echo 'Successfully ran cfn-init'",
                        " || err_exit 'Failed to run cfn-init' > /dev/stderr\n",
-                "      \n",
-                "      # Do pip-stuff\n",
-                "      pip install -i ",
-                       { "Ref": "PipIndexFips" },
-                       " --upgrade pip\n",
                 "      \n",
                 "      # Add admin SSH keys to the ",
                        { "Ref": "ProvisionUser" },
@@ -674,13 +667,30 @@
                        " >> ${PROVHOME}/.ssh/authorized_keys || ",
                        "err_exit 'Failed to install admin-users keys'\n",
                 "      \n",
+                "      # Save off critical template parms\n",
+                "      if [[ -d /etc/cfn ]]\n",
+                "      then\n",
+                "         env | grep SONAR > /etc/cfn/Sonarqube.envs\n",
+                "      else\n",
+                "         err_exit 'Missing CFn directory: cannot save envs'\n",
+                "      fi\n",
+                "      \n",
+                "      # Ensure SEL-mode is dialed-back\n",
+                "      if [[ $(getenforce) = Enforcing ]]\n",
+                "      then\n",
+                "         printf 'Relaxing SELINUX mode... '\n",
+                "         sed -i '/^SELINUX=/s/=.*/=permissive/' /etc/selinux/config || \\n",
+                "           err_exit 'Failed to update SEL config file'\n",
+                "         setenforce 0 || err_exit 'Failed to set SEL to permissive'\n",
+                "      else\n",
+                "         echo 'SELinux already dialed back'\n",
+                "      fi\n",
+                "      \n",
                 "      # Add local firewall exceptions\n",
-                "      setenforce 0\n",
                 "      printf 'Adding firewall exception... '\n",
                 "      firewall-cmd --add-port=9000/tcp --permanent\n",
                 "      printf 'Reloading firewall config... '\n",
                 "      firewall-cmd --reload\n",
-                "      setenforce 1\n",
                 "      \n",
                 "      # Ensure sonarqube can write to its directory\n",
                 "      echo 'Setting ownership on Sonarqube directory'\n",
@@ -697,15 +707,19 @@
                 "      curl -o /tmp/sonar-setup.sh -skL ",
                        { "Ref": "SonarAppSetupUrl" },
                        "|| err_exit 'Failed to fetch Sonarqube setup script'\n",
-                "      su ",
+                "      echo 'Running app installer/setup'\n",
+                "      su -s /bin/bash ",
                           { "Ref": "SonarUser" },
                           " -c \"bash /tmp/sonar-setup.sh ",
                           { "Ref": "SonarSrcUrl" },
                           "\" || err_exit 'Sonarqube setup script failed.'\n",
                 "      \n",
-                "      curl -skL ",
+                "      curl -o /root/sqb_init_setup.sh -skL ",
                           { "Ref": "SonarInitSetupUrl" },
-                          " | bash\n",
+                          "\n",
+                "      printf 'Running sysvinit setup... '\n",
+                "      bash /root/sqb_init_setup.sh && echo \"Sucess.\"",
+                       " || err_exit 'Failed running sysvinit setup'\n",
                 "      \n",
                 "      # Signal Cfn that we're good\n",
                 "      /opt/aws/bin/cfn-signal -e 0 --stack ",
