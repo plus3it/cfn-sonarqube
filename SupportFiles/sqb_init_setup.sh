@@ -4,14 +4,25 @@
 # Set up Sonarqube as a service that starts on boot
 #################################################################
 PROGNAME=$(basename $0)
+while read -r SQENV
+do
+   # shellcheck disable=SC2163
+   export "${SQENV}"
+done < /etc/cfn/Sonarqube.envs
 SONARUSER=${SONAR_USER:-UNDEF}
-SONARINIT="/etc/init.d/sonarqube"
+SONARINIT="/etc/systemd/system/sonar.service"
 
 # Error-outputter
 function err_exit {
    logger -p kern.crit -t $PROGNAME -s "${1}"
    exit 1
 }
+
+# Exit if we have no user
+if [[ ${SONARUSER} = UNDEF ]]
+then
+   err_exit 'No SonarQube user defined'
+fi
 
 # Link Sonarqube into system-bin
 printf "Linking Sonarqube startup script to /usr/bin..."
@@ -36,25 +47,22 @@ printf "Creating service file... "
 install -b -m 755 /dev/null "${SONARINIT}" || \
    err_exit 'Failed to create service control file.'
 cat << EOF > "${SONARINIT}"
-#!/bin/sh
-#
-# rc file for SonarQube
-#
-# chkconfig: 345 96 10
-# description: SonarQube system (www.sonarsource.org)
-#
-### BEGIN INIT INFO
-# Provides: sonar
-# Required-Start: $network
-# Required-Stop: $network
-# Default-Start: 3 4 5
-# Default-Stop: 0 1 2 6
-# Short-Description: SonarQube system (www.sonarsource.org)
-# Description: SonarQube system (www.sonarsource.org)
-### END INIT INFO
-#################################################################
+[Unit]
+Description=SonarQube
+After=network.target network-online.target
+Wants=network-online.target
 
-su - "${SONARUSER}" -c "/usr/bin/sonar \$*"
+[Service]
+ExecStart=/home/sonarqube/sonarqube/bin/linux-x86-64/sonar.sh start
+ExecStop=/home/sonarqube/sonarqube/bin/linux-x86-64/sonar.sh stop
+ExecReload=/home/sonarqube/sonarqube/bin/linux-x86-64/sonar.sh restart
+PIDFile=/home/sonarqube/sonarqube/bin/linux-x86-64/SonarQube.pid
+Type=forking
+User=${SONARUSER}
+
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
 # shellcheck disable=SC2181
@@ -66,16 +74,14 @@ else
 fi
 
 
-# Add Sonarqube service-entries
-printf "Adding Sonarqube service... "
-chkconfig --add sonarqube && echo "Success." || \
-   err_exit 'Failed to add Sonarqube service.'
+# Enable as systemd service
+systemctl daemon-reload || err_exit 'Failed reloading systemd units'
 printf "Enabling Sonarqube service... "
-chkconfig sonarqube on && echo "Success." || \
-   err_exit 'Failed to enable Sonarqube service.'
+systemctl enable sonar.service && echo "Success" || \
+  err_exit 'Failed enabling systemd service'
 printf "Starting Sonarqube service... "
-service sonarqube start && echo "Success."  || \
-   err_exit 'Failed to start Sonarqube service.'
+systemctl start sonar.service && echo "Success" || \
+  err_exit 'Failed starting systemd service'
 
 # Add Sonarqube backup cron job(s)
 # shellcheck disable=SC2016
