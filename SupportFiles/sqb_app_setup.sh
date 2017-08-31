@@ -16,6 +16,7 @@ PGSQLUSER=${SONARQUBE_DBUSER:-UNDEF}
 PGSQLPASS=${SONARQUBE_DBPASS:-UNDEF}
 PGSQLHOST=${SONARQUBE_DBHOST:-UNDEF}
 PGSQLINST=${SONARQUBE_DBINST:-UNDEF}
+SONARHOME="$(getent passwd $LOGNAME | cut -d: -f 6)"
 
 # Define an error-handler
 function err_exit {
@@ -40,7 +41,7 @@ fi
 
 # Ensure we're properly rooted
 # shellcheck disable=SC2046
-cd $(getent passwd $LOGNAME | cut -d: -f 6) || err_exit "Change-dir failed."
+cd "${SONARHOME}" || err_exit "Change-dir failed."
 
 # Fetch sonarqube ZIP-bundle
 printf "Fetching %s..." "${SQBURL}"
@@ -54,11 +55,14 @@ SQBROOT=$(unzip -qql /tmp/sonarqube.zip | head -n1 |
 SQBPROP=sonarqube/conf/sonar.properties
 
 # De-archive Sonarqube ZIP-bundle
-printf "Unzipping Sonarqube... "
-unzip -qq /tmp/sonarqube.zip && echo "Success." || \
-   err_exit 'Failed to de-archive Sonarqube ZIP.'
-printf "Renaming dir..."
-mv "${SQBROOT}" sonarqube
+if [[ ! -d ${SONARHOME}/sonarqube ]]
+then
+   printf "Unzipping Sonarqube... "
+   unzip -qq /tmp/sonarqube.zip && echo "Success." || \
+      err_exit 'Failed to de-archive Sonarqube ZIP.'
+   printf "Renaming dir..."
+   mv "${SQBROOT}" sonarqube
+fi
 
 # Create null Sonar properties file with proper SEL contexts
 # ...saving off "DIST" file if appropriate
