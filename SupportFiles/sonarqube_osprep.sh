@@ -129,11 +129,75 @@ function InstMissingRPM {
    fi
 }
 
+##
+## Enable NFS-client pieces
+function NfsClientStart {
+   local NFSCLIENTSVCS=(
+            rpcbind
+            nfs-server
+            nfs-lock
+            nfs-idmap
+         )
+
+    # Enable and start services
+    for SVC in "${NFSCLIENTSVCS[@]}"
+    do
+       printf "Enabling %s... " "${SVC}"
+       systemctl enable "${SVC}" && echo "Success!" || \
+          err_exit "Failed to enable ${SVC}"
+       printf "Starting %s... " "${SVC}"
+       systemctl start "${SVC}" && echo "Success!" || \
+          err_exit "Failed to start ${SVC}"
+    done
+}
+
+function FwSetup {
+   local SELMODE=$(getenforce)
+
+   # Relax SEL as necessary
+   if [[ ${SELMODE} = Enforcing ]]
+   then
+      printf "Temporarily relaxing SELinux mode... "
+      setenforce 0 && echo "Done" || \
+        err_exit 'Failed to relax SELinux mode'
+   fi
+
+   # Update firewalld config
+   printf "Creating firewalld service for Sonarqube... "
+   firewall-cmd --permanent --new-service=sonarqube || \
+     err_exit 'Failed to initialize sonarqube firewalld service'
+   printf "Setting short description for Sonarqube firewalld service... "
+   firewall-cmd --permanent --service=sonarqube \
+     --set-short="Sonarqube Service Ports" || \
+     err_exit 'Failed to add short service description'
+   printf "Setting long description for Sonarqube firewalld service... "
+   firewall-cmd --permanent --service=sonarqube \
+     --set-description="Firewalld options supporting Sonarqube deployments" || \
+     err_exit 'Failed to add long service description'
+   printf "Adding port 9000/tcp to Sonarqube firewalld service... "
+   firewall-cmd --permanent --service=sonarqube --add-port=9000/tcp || \
+     err_exit 'Failed to add firewalld exception for 9000/tcp'
+   printf "Adding port 9001/tcp to Sonarqube firewalld service... "
+   firewall-cmd --permanent --service=sonarqube --add-port=9001/tcp || \
+     err_exit 'Failed to add firewalld exception for 9001/tcp'
+   printf "Activating service in permanent firewalld configuration... "
+   firewall-cmd --permanent --add-service=sonarqube || \
+     err_exit 'Failed to activate service'
+   printf "Reloading firewalld configuration... "
+   firewall-cmd --reload || err_exit "Failed reloading firewalld configuration."
+
+   # Revert SEL-mode
+   setenforce "${SELMODE}"
+}
+
 
 
 ####
 ## Main
 ####
+
+# Call firewall setup tasks
+FwSetup
 
 # Modify some behaviors depending on Sonarqube-home's share-type
 case "${SHARETYPE}" in
