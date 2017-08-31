@@ -51,8 +51,7 @@
           },
           "Parameters": [
             "SonarUser",
-            "SonarHomeShareHost",
-            "SonarHomeSharePath",
+            "SonarHomeShareUri",
             "SonarHomeShareType",
             "SonarSrcUrl",
             "SonarInitSetupUrl",
@@ -270,11 +269,7 @@
       "Description": "Name of the Sonarqube master database-user.",
       "Type": "String"
     },
-    "SonarHomeShareHost": {
-      "Description": "Fully-qualified domain name of the NAS-source for Sonarqube shared-data directory.",
-      "Type": "String"
-    },
-    "SonarHomeSharePath": {
+    "SonarHomeShareUri": {
       "Default": "",
       "Description": "Share-path of shared Sonarqube-home.",
       "Type": "String"
@@ -555,11 +550,8 @@
                 "      export SONARQUBE_ZIP=\"",
                        { "Ref": "SonarSrcUrl" },
                        "\"\n",
-                "      export SONARQUBE_SHARE_HOST=\"",
-                       { "Ref": "SonarHomeShareHost" },
-                       "\"\n",
-                "      export SONARQUBE_SHARE_PATH=\"",
-                       { "Ref": "SonarHomeSharePath" },
+                "      export SONARQUBE_SHARE_URI=\"",
+                       { "Ref": "SonarHomeShareUri" },
                        "\"\n",
                 "      export SONARQUBE_SHARE_TYPE=\"",
                        { "Ref": "SonarHomeShareType" },
@@ -652,7 +644,7 @@
                            ":",
                            { "Ref": "SonarUser" },
                            " ",
-                           { "Ref": "SonarHomeSharePath" },
+                           { "Ref": "SonarHomeShareUri" },
                        " || err_exit \"Failed to set correct ownership",
                        " on the sonarqube filesystem.\"\n",
                 "      \n",
