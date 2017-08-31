@@ -11,11 +11,6 @@
         { "Fn::Equals": [ { "Ref": "NoPublicIp" }, "true" ] }
       ]
     },
-    "CreateAppVolume": {
-      "Fn::Not": [
-        { "Fn::Equals": [ { "Ref": "AppVolumeDevice" }, "" ] }
-      ]
-    },
     "Reboot": {
       "Fn::Not": [
         { "Fn::Equals": [ { "Ref": "NoReboot" }, "true" ] }
@@ -55,14 +50,13 @@
             "default": "Application Info"
           },
           "Parameters": [
+            "SonarUser",
+            "SonarHomeShareHost",
+            "SonarHomeSharePath",
+            "SonarHomeShareType",
             "SonarSrcUrl",
             "SonarInitSetupUrl",
-            "SonarAppSetupUrl",
-            "SonarUser",
-            "AppVolumeSize",
-            "AppVolumeType",
-            "AppVolumeDevice",
-            "AppVolumeMountPath"
+            "SonarAppSetupUrl"
           ]
         },
         {
@@ -75,23 +69,24 @@
             "SonarDbUser",
             "SonarDbPass"
           ]
+        },
+        {
+          "Label": {
+            "default": "Miscellaneous Parameters"
+          },
+          "Parameters": [
+            "CfnEndpointUrl",
+            "BackupBucket",
+            "EpelRepo",
+            "PyStache",
+            "PipRpm",
+            "PipIndexFips"
+          ]
         }
       ],
       "ParameterLabels": {
         "AdminPubkeyURL": {
           "default": "Supplemental admin SSH Keys"
-        },
-        "AppVolumeDevice": {
-          "default": "Sonarqube $HOME dev-node"
-        },
-        "AppVolumeMountPath": {
-          "default": "Sonarqube $HOME location"
-        },
-        "AppVolumeSize": {
-          "default": "Sonarqube $HOME size"
-        },
-        "AppVolumeType": {
-          "default": "Sonarqube $HOME EBS type"
         },
         "KeyPairName": {
           "default": "Default login's SSH Key"
@@ -130,42 +125,6 @@
     }
   },
   "Parameters": {
-    "SonarDbHost": {
-      "Description": "FQDN of the Sonarqube database.",
-      "Type": "String"
-    },
-    "SonarDbInst": {
-      "Description": "Instance-name of the Sonarqube database.",
-      "Type": "String"
-    },
-    "SonarDbPass": {
-      "Description": "Password of the Sonarqube master database-user.",
-      "Type": "String"
-    },
-    "SonarDbUser": {
-      "Description": "Name of the Sonarqube master database-user.",
-      "Type": "String"
-    },
-    "SonarAppSetupUrl": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL of the Sonarqube setup script.",
-      "Type": "String"
-    },
-    "SonarInitSetupUrl": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL of the Sonarqube service setup script.",
-      "Type": "String"
-    },
-    "SonarSrcUrl": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL of the Sonarqube ZIP-bundle.",
-      "Type": "String"
-    },
-    "SonarUser": {
-      "Description": "Userid the Sonarqube service runs under.",
-      "Default": "sonarqube",
-      "Type": "String"
-    },
     "AdminPubkeyURL": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URL the file containing the admin users' SSH public keys.",
@@ -176,52 +135,26 @@
       "Description": "ID of the AMI to launch",
       "Type": "String"
     },
-    "AppVolumeDevice": {
-      "AllowedValues": [
-        "",
-        "/dev/xvdf",
-        "/dev/xvdg",
-        "/dev/xvdh",
-        "/dev/xvdi",
-        "/dev/xvdj"
-      ],
-      "Default": "",
-      "Description": "Device to mount an extra EBS volume. Leave blank to launch without an extra application volume",
-      "Type": "String"
-    },
-    "AppVolumeMountPath": {
-      "AllowedPattern": "/.*",
-      "Default": "/home/sonarqube",
-      "Description": "Filesystem path to mount the extra app volume. Ignored if \"AppVolumeDevice\" is blank",
-      "Type": "String"
-    },
-    "AppVolumeSize": {
-      "ConstraintDescription": "Must be between 10GB and 16384GB.",
-      "Default": "10",
-      "Description": "Size in GB of the EBS volume to create. Ignored if \"AppVolumeDevice\" is blank",
-      "MaxValue": "16384",
-      "MinValue": "10",
-      "Type": "Number"
-    },
-    "AppVolumeType": {
-      "AllowedValues": [
-        "gp2",
-        "io1",
-        "sc1",
-        "st1",
-        "standard"
-      ],
-      "Default": "gp2",
-      "Description": "Type of EBS volume to create. Ignored if \"AppVolumeDevice\" is blank",
-      "Type": "String"
-    },
     "BackupBucket": {
       "Description": "Name of S3 bucket used for Sonarqube backup tasks.",
+      "Type": "String"
+    },
+    "CfnEndpointUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Default": "",
+      "Description": "URL to the CloudFormation Endpoint. e.g. https://cloudformation.us-east-1.amazonaws.com",
       "Type": "String"
     },
     "Domainname": {
       "ConstraintDescription": "An alphanumeric string to complete the domain portion of the instance's FQDN.",
       "Description": "Suffix for Sonarqube's hostname and DNS record",
+      "Type": "String"
+    },
+    "EpelRepo": {
+      "AllowedPattern": "^[a-z][a-z0-9-]*$",
+      "ConstraintDescription": "An alphanumeric string that represents the EPEL yum repo's label.",
+      "Default": "epel",
+      "Description": "Name of network's EPEL repo.",
       "Type": "String"
     },
     "Hostname": {
@@ -232,19 +165,6 @@
     },
     "InstanceProfile": {
       "Description": "IAM instance profile to apply to the instance(s)",
-      "Type": "String"
-    },
-    "CfnEndpointUrl": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Default": "",
-      "Description": "URL to the CloudFormation Endpoint. e.g. https://cloudformation.us-east-1.amazonaws.com",
-      "Type": "String"
-    },
-    "EpelRepo": {
-      "AllowedPattern": "^[a-z][a-z0-9-]*$",
-      "ConstraintDescription": "An alphanumeric string that represents the EPEL yum repo's label.",
-      "Default": "epel",
-      "Description": "Name of network's EPEL repo.",
       "Type": "String"
     },
     "InstanceType": {
@@ -328,6 +248,59 @@
     "SecurityGroupIds": {
       "Description": "List of security groups to apply to the instance(s)",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "SonarAppSetupUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the Sonarqube setup script.",
+      "Type": "String"
+    },
+    "SonarDbHost": {
+      "Description": "FQDN of the Sonarqube database.",
+      "Type": "String"
+    },
+    "SonarDbInst": {
+      "Description": "Instance-name of the Sonarqube database.",
+      "Type": "String"
+    },
+    "SonarDbPass": {
+      "Description": "Password of the Sonarqube master database-user.",
+      "Type": "String"
+    },
+    "SonarDbUser": {
+      "Description": "Name of the Sonarqube master database-user.",
+      "Type": "String"
+    },
+    "SonarHomeShareHost": {
+      "Description": "Fully-qualified domain name of the NAS-source for Sonarqube shared-data directory.",
+      "Type": "String"
+    },
+    "SonarHomeSharePath": {
+      "Default": "",
+      "Description": "Share-path of shared Sonarqube-home.",
+      "Type": "String"
+    },
+    "SonarHomeShareType": {
+      "AllowedValues": [
+        "glusterfs",
+        "nfs"
+      ],
+      "Description": "Type of network share hosting persisted Jira-home content.",
+      "Type": "String"
+    },
+    "SonarInitSetupUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the Sonarqube service setup script.",
+      "Type": "String"
+    },
+    "SonarSrcUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the Sonarqube ZIP-bundle.",
+      "Type": "String"
+    },
+    "SonarUser": {
+      "Description": "Userid the Sonarqube service runs under.",
+      "Default": "sonarqube",
+      "Type": "String"
     },
     "SubnetIds": {
       "Description": "Subnet to associate to the Instance",
@@ -478,20 +451,6 @@
               "VolumeSize": "20",
               "VolumeType": "gp2"
             }
-          },
-          {
-            "Fn::If": [
-              "CreateAppVolume",
-              {
-                "DeviceName": { "Ref": "AppVolumeDevice" },
-                "Ebs": {
-                  "DeleteOnTermination": "true",
-                  "VolumeSize": { "Ref": "AppVolumeSize" },
-                  "VolumeType": { "Ref": "AppVolumeType" }
-                }
-              },
-              { "Ref": "AWS::NoValue" }
-            ]
           }
         ],
         "IamInstanceProfile": {
@@ -562,26 +521,11 @@
                 "    lock-passwd: True\n",
                 "    shell: /bin/true\n",
                 "\n",
-                "bootcmd:\n",
-                "  - cloud-init-per instance mkfs-appvolume mkfs -t ext4 ",
-                { "Ref": "AppVolumeDevice" },
-                "\n",
-                "\n",
-                "mounts:\n",
-                "  - [ ",
-                "\"",
-                { "Ref": "AppVolumeDevice" },
-                "\", ",
-                "\"",
-                { "Ref": "AppVolumeMountPath" },
-                "\", ",
-                "\"auto\" ",
-                "]\n",
-                "\n",
                 "packages:\n",
                 "  - postgresql\n",
                 "  - postgresql-jdbc\n",
                 "  - unzip\n",
+                "  - nfs-utils\n",
                 "\n",
                 "runcmd:\n",
                 "  - |-\n",
@@ -610,6 +554,15 @@
                        "\"\n",
                 "      export SONARQUBE_ZIP=\"",
                        { "Ref": "SonarSrcUrl" },
+                       "\"\n",
+                "      export SONARQUBE_SHARE_HOST=\"",
+                       { "Ref": "SonarHomeShareHost" },
+                       "\"\n",
+                "      export SONARQUBE_SHARE_PATH=\"",
+                       { "Ref": "SonarHomeSharePath" },
+                       "\"\n",
+                "      export SONARQUBE_SHARE_TYPE=\"",
+                       { "Ref": "SonarHomeShareType" },
                        "\"\n",
                 "      \n",
                 "      # Helper function\n",
@@ -699,7 +652,7 @@
                            ":",
                            { "Ref": "SonarUser" },
                            " ",
-                           { "Ref": "AppVolumeMountPath" },
+                           { "Ref": "SonarHomeSharePath" },
                        " || err_exit \"Failed to set correct ownership",
                        " on the sonarqube filesystem.\"\n",
                 "      \n",

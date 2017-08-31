@@ -1,0 +1,139 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This template sets up the EFS filesystems used by Sonarqube for persistent storage",
+  "Outputs": {
+    "EfsEndpoint": {
+      "Description": "FQDN for Sonarqube EFS endpoint.",
+      "Value": {
+        "Fn::Join": [
+          ".",
+          [
+            { "Ref": "SonarqubeEFS" },
+            "efs",
+            { "Ref": "AWS::Region" },
+            { "Ref": "ServiceTld" }
+          ]
+        ]
+      }
+    },
+    "EfsId": {
+      "Description": "Sonarqube EFS filesystem-ID.",
+      "Value": {
+        "Ref": "SonarqubeEFS"
+      }
+    },
+    "EfsMntId1": {
+      "Description": "Sonarqube EFS mount-target ID.",
+      "Value": {
+        "Ref": "SonarqubeEFSMount1"
+      }
+    },
+    "EfsMntId2": {
+      "Description": "Sonarqube EFS mount-target ID.",
+      "Value": {
+        "Ref": "SonarqubeEFSMount2"
+      }
+    },
+    "EfsMntId3": {
+      "Description": "Sonarqube EFS mount-target ID.",
+      "Value": {
+        "Ref": "SonarqubeEFSMount3"
+      }
+    }
+  },
+  "Parameters": {
+    "EfsSg": {
+      "Description": "List of security groups to apply to the EFS shares.",
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "EfsSubnet": {
+      "Description": "Select three subnets - each from different Availability Zones.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "ServiceTld": {
+      "Default": "amazonaws.com",
+      "Description": "TLD of the created EFS-endpoint.",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "SonarqubeEFS": {
+      "Properties": {
+        "FileSystemTags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-Sonarqube_EFS"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EFS::FileSystem"
+    },
+    "SonarqubeEFSMount1": {
+      "Properties": {
+        "FileSystemId": {
+          "Ref": "SonarqubeEFS"
+        },
+        "SecurityGroups": {
+          "Ref": "EfsSg"
+        },
+        "SubnetId": {
+          "Fn::Select": [
+            "0",
+            {
+              "Ref": "EfsSubnet"
+            }
+          ]
+        }
+      },
+      "Type": "AWS::EFS::MountTarget"
+    },
+    "SonarqubeEFSMount2": {
+      "Properties": {
+        "FileSystemId": {
+          "Ref": "SonarqubeEFS"
+        },
+        "SecurityGroups": {
+          "Ref": "EfsSg"
+        },
+        "SubnetId": {
+          "Fn::Select": [
+            "1",
+            {
+              "Ref": "EfsSubnet"
+            }
+          ]
+        }
+      },
+      "Type": "AWS::EFS::MountTarget"
+    },
+    "SonarqubeEFSMount3": {
+      "Properties": {
+        "FileSystemId": {
+          "Ref": "SonarqubeEFS"
+        },
+        "SecurityGroups": {
+          "Ref": "EfsSg"
+        },
+        "SubnetId": {
+          "Fn::Select": [
+            "2",
+            {
+              "Ref": "EfsSubnet"
+            }
+          ]
+        }
+      },
+      "Type": "AWS::EFS::MountTarget"
+    }
+  }
+}
