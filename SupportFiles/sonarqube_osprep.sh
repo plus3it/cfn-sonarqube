@@ -12,6 +12,7 @@ do
   # shellcheck disable=SC2163
   export "${ENV}"
 done < /etc/cfn/Sonarqube.envs
+SONARROOTDIR="${SONARQUBE_SHARE_MOUNT}"
 SHARETYPE="${SONARQUBE_SHARE_TYPE}"
 SHAREURI="${SONARQUBE_SHARE_URI}"
 RPMDEPLST=(
@@ -209,7 +210,7 @@ case "${SHARETYPE}" in
             nfs4-acl-tools
          )
       (
-       printf "%s\t%s\tnfs4\t" "${SHAREURI}" "${JIRADCHOME}" ;
+       printf "%s\t%s\tnfs4\t" "${SHAREURI}" "${SONARROOTDIR}" ;
        printf "rw,relatime,vers=4.1,rsize=1048576,wsize=1048576," ;
        printf "namlen=255,hard,proto=tcp,timeo=600,retrans=2\t0 0\n"
       ) >> /etc/fstab || err_exit "Failed to add NFS volume to fstab"
@@ -221,7 +222,7 @@ case "${SHARETYPE}" in
             attr
          )
       (
-       printf "%s\t%s\tglusterfs\t" "${SHAREURI}" "${JIRADCHOME}" ;
+       printf "%s\t%s\tglusterfs\t" "${SHAREURI}" "${SONARROOTDIR}" ;
        printf "defaults\t0 0\n"
       ) >> /etc/fstab || err_exit "Failed to add NFS volume to fstab"
       ;;
@@ -229,3 +230,23 @@ esac
 
 # Call Setup functions
 InstMissingRPM
+
+# Start NFS Client services as necessary
+if [[ $(rpm --quiet -q nfs-utils)$? -eq 0 ]]
+then
+   NfsClientStart
+fi
+
+# Mount persistent Sonarqube home directory
+if [[ -d ${SONARROOTDIR} ]]
+then
+   echo "${SONARROOTDIR} already exists: skipping create"
+else
+   printf "Attempting to create %s... " "${SONARROOTDIR}"
+   mkdir "${SONARROOTDIR}" && echo "Success!" || \
+      err_exit "Failed to create Sonarqube root-dir"
+fi
+
+printf "Mounting ${SONARROOTDIR}... "
+mount "${SONARROOTDIR}" && echo "Done." || \
+  err_exit "Failed to mount ${SONARROOTDIR}"
