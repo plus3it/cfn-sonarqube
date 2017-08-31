@@ -28,8 +28,8 @@ fi
 printf "Linking Sonarqube startup script to /usr/bin..."
 case $(uname -m) in
    x86_64) 
-      SONARHOME=$(getent passwd ${SONARUSER} | cut -d: -f6)
-      SONARBIN=$(find ${SONARHOME} -type f | grep "linux-x86-64/sonar.sh")
+      SONARHOME="$(getent passwd ${SONARUSER} | cut -d: -f6)"
+      SONARBIN="$(find /home/sonarqube -type f -name sonar.sh | grep linux-x86-64)"
       ln -s $SONARBIN /usr/bin/sonar || err_exit "Failed to create symlink"
       ;;
    i386|i486|i586|i686)
