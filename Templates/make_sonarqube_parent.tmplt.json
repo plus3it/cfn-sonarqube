@@ -10,6 +10,7 @@
           },
           "Parameters": [
             "SgTemplateUri",
+            "EfsTemplate",
             "RdsTemplateUri",
             "BucketTemplate",
             "IamTemplate",
@@ -39,13 +40,13 @@
           },
           "Parameters": [
             "SonarUser",
-            "AppVolumeMountPath",
-            "AppVolumeSize",
-            "AppVolumeType",
-            "AppVolumeDevice",
             "SonarSrcUrl",
+            "SonarOsPrepUrl",
+            "SonarAppSetupUrl",
             "SonarInitSetupUrl",
-            "SonarAppSetupUrl"
+            "SonarHomeShareUri",
+            "SonarHomeMountLoc",
+            "SonarqubeBackupBucket"
           ]
         },
         {
@@ -80,10 +81,15 @@
     }
   },
   "Parameters": {
-    "SonarqubeBackupBucket": {
-      "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
-      "Type": "String",
-      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$"
+    "AdminPubkeyURL": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL the file containing the admin users' SSH public keys.",
+      "Type": "String"
+    },
+    "AmiId": {
+      "AllowedPattern": "^ami-[0-9a-z]{8}$|^ami-[0-9a-z]{17}$",
+      "Description": "ID of the AMI to launch",
+      "Type": "String"
     },
     "BucketTemplate": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
@@ -141,28 +147,9 @@
       "Description": "NodeName of the SonarQube database.",
       "Type": "String"
     },
-    "PgsqlVersion": {
-      "AllowedValues": [
-        "9.6.3",
-        "9.6.2",
-        "9.6.1",
-        "9.5.7",
-        "9.5.6",
-        "9.5.4",
-        "9.5.2"
-      ],
-      "Default": "9.6.3",
-      "Description": "The X.Y.Z version of the PostGreSQL database to deploy.",
-      "Type": "String"
-    },
-    "RdsTemplateUri": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URI for the template that creates SonarQube's RDS database.",
-      "Type": "String"
-    },
-    "ServiceTld": {
-      "Default": "amazonaws.com",
-      "Description": "TLD of the created EFS-endpoint.",
+    "Domainname": {
+      "ConstraintDescription": "An alphanumeric string to complete the domain portion of the instance's FQDN.",
+      "Description": "Suffix for Sonarqube's hostname and DNS record",
       "Type": "String"
     },
     "Ec2Template": {
@@ -170,103 +157,9 @@
       "Description": "URI for the template that creates the EC2 instance to host the SonarQube application.",
       "Type": "String"
     },
-    "HaSubnets": {
-      "Description": "Select three subnets - each from different Availability Zones.",
-      "Type": "List<AWS::EC2::Subnet::Id>"
-    },
-    "IamTemplate": {
+    "EfsTemplate": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URI for the template that creates SonarQube's IAM role(s).",
-      "Type": "String"
-    },
-    "SgTemplateUri":{
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URI for the template that creates SonarQube's security groups.",
-      "Type": "String"
-    },
-    "SonarAppSetupUrl": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL of the Sonarqube setup script.",
-      "Type": "String"
-    },
-    "SonarInitSetupUrl": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL of the Sonarqube service setup script.",
-      "Type": "String"
-    },
-    "SonarSrcUrl": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL of the Sonarqube ZIP-bundle.",
-      "Type": "String"
-    },
-    "SonarUser": {
-      "Description": "Userid the Sonarqube service runs under.",
-      "Default": "sonarqube",
-      "Type": "String"
-    },
-    "TargetVPC": {
-      "AllowedPattern": "^vpc-[0-9a-f]*$",
-      "Description": "ID of the VPC to deploy cluster nodes into.",
-      "Type": "AWS::EC2::VPC::Id"
-    },
-    "AdminPubkeyURL": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL the file containing the admin users' SSH public keys.",
-      "Type": "String"
-    },
-    "AmiId": {
-      "AllowedPattern": "^ami-[0-9a-z]{8}$|^ami-[0-9a-z]{17}$",
-      "Description": "ID of the AMI to launch",
-      "Type": "String"
-    },
-    "AppVolumeDevice": {
-      "AllowedValues": [
-        "",
-        "/dev/xvdf",
-        "/dev/xvdg",
-        "/dev/xvdh",
-        "/dev/xvdi",
-        "/dev/xvdj"
-      ],
-      "Default": "",
-      "Description": "Device to mount an extra EBS volume. Leave blank to launch without an extra application volume",
-      "Type": "String"
-    },
-    "AppVolumeMountPath": {
-      "AllowedPattern": "/.*",
-      "Default": "/home/sonarqube",
-      "Description": "Filesystem path to mount the extra app volume. Ignored if \"AppVolumeDevice\" is blank",
-      "Type": "String"
-    },
-    "AppVolumeSize": {
-      "ConstraintDescription": "Must be between 10GB and 16384GB.",
-      "Default": "10",
-      "Description": "Size in GB of the EBS volume to create. Ignored if \"AppVolumeDevice\" is blank",
-      "MaxValue": "16384",
-      "MinValue": "10",
-      "Type": "Number"
-    },
-    "AppVolumeType": {
-      "AllowedValues": [
-        "gp2",
-        "io1",
-        "sc1",
-        "st1",
-        "standard"
-      ],
-      "Default": "gp2",
-      "Description": "Type of EBS volume to create. Ignored if \"AppVolumeDevice\" is blank",
-      "Type": "String"
-    },
-    "Domainname": {
-      "ConstraintDescription": "An alphanumeric string to complete the domain portion of the instance's FQDN.",
-      "Description": "Suffix for Sonarqube's hostname and DNS record",
-      "Type": "String"
-    },
-    "Hostname": {
-      "ConstraintDescription": "An alphanumeric string to complete the hostname portion of the instance's FQDN.",
-      "Default": "sonarqube",
-      "Description": "Node-name for Sonarqube's hostname and DNS record",
+      "Description": "URI for the template that creates the EFS service to host SonarQube's persistent data.",
       "Type": "String"
     },
     "EpelRepo": {
@@ -274,6 +167,21 @@
       "ConstraintDescription": "An alphanumeric string that represents the EPEL yum repo's label.",
       "Default": "epel",
       "Description": "Name of network's EPEL repo.",
+      "Type": "String"
+    },
+    "HaSubnets": {
+      "Description": "Select three subnets - each from different Availability Zones.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "Hostname": {
+      "ConstraintDescription": "An alphanumeric string to complete the hostname portion of the instance's FQDN.",
+      "Default": "sonarqube",
+      "Description": "Node-name for Sonarqube's hostname and DNS record",
+      "Type": "String"
+    },
+    "IamTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's IAM role(s).",
       "Type": "String"
     },
     "InstanceType": {
@@ -331,6 +239,20 @@
       "Description": "Controls whether to reboot the instance as the last step of cfn-init execution",
       "Type": "String"
     },
+    "PgsqlVersion": {
+      "AllowedValues": [
+        "9.6.3",
+        "9.6.2",
+        "9.6.1",
+        "9.5.7",
+        "9.5.6",
+        "9.5.4",
+        "9.5.2"
+      ],
+      "Default": "9.6.3",
+      "Description": "The X.Y.Z version of the PostGreSQL database to deploy.",
+      "Type": "String"
+    },
     "PipIndexFips": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Default": "https://pypi.org/simple/",
@@ -354,17 +276,75 @@
       "Description": "Name of preferred pystache RPM.",
       "Type": "String"
     },
+    "RdsTemplateUri": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's RDS database.",
+      "Type": "String"
+    },
+    "ServiceTld": {
+      "Default": "amazonaws.com",
+      "Description": "TLD of the created EFS-endpoint.",
+      "Type": "String"
+    },
+    "SgTemplateUri": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's security groups.",
+      "Type": "String"
+    },
+    "SonarAppSetupUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the Sonarqube setup script.",
+      "Type": "String"
+    },
+    "SonarHomeMountLoc": {
+      "Description": "Mount-location of Sonarqube service.",
+      "Type": "String"
+    },
+    "SonarHomeShareUri": {
+      "Description": "Share-path of shared Sonarqube-home.",
+      "Type": "String"
+    },
+    "SonarInitSetupUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the Sonarqube service setup script.",
+      "Type": "String"
+    },
+    "SonarOsPrepUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the script ready the OS for Sonarqube installation.",
+      "Type": "String"
+    },
+    "SonarSrcUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the Sonarqube ZIP-bundle.",
+      "Type": "String"
+    },
+    "SonarUser": {
+      "Default": "sonarqube",
+      "Description": "Userid the Sonarqube service runs under.",
+      "Type": "String"
+    },
+    "SonarqubeBackupBucket": {
+      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$",
+      "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
+      "Type": "String"
+    },
     "SubnetId": {
       "Description": "Subnet to associate to the Instance",
       "Type": "AWS::EC2::Subnet::Id"
+    },
+    "TargetVPC": {
+      "AllowedPattern": "^vpc-[0-9a-f]*$",
+      "Description": "ID of the VPC to deploy cluster nodes into.",
+      "Type": "AWS::EC2::VPC::Id"
     }
   },
   "Resources": {
     "BackupBucketRes": {
       "Properties": {
-	"Parameters": {
-	  "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" }
-	},
+        "Parameters": {
+          "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" }
+        },
         "TemplateURL": { "Ref": "BucketTemplate" },
         "TimeoutInMinutes": "10"
       },
@@ -375,10 +355,6 @@
         "Parameters": {
           "AdminPubkeyURL": { "Ref": "AdminPubkeyURL" },
           "AmiId": { "Ref": "AmiId" },
-          "AppVolumeDevice": { "Ref": "AppVolumeDevice" },
-          "AppVolumeMountPath": { "Ref": "AppVolumeMountPath" },
-          "AppVolumeSize": { "Ref": "AppVolumeSize" },
-          "AppVolumeType": { "Ref": "AppVolumeType" },
           "BackupBucket": {
             "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketName" ]
           },
@@ -423,12 +399,41 @@
           "SonarDbInst": { "Ref": "DbInstanceName" },
           "SonarDbPass": { "Ref": "DbAdminPass" },
           "SonarDbUser": { "Ref": "DbAdminName" },
+          "SonarHomeMountLoc": { "Ref": "SonarHomeMountLoc" },
+          "SonarHomeShareType": "nfs",
+          "SonarHomeShareUri": {
+            "Fn::Join": [
+              ":",
+              [
+                { "Fn::GetAtt": [ "EfsRes", "Outputs.EfsEndpoint" ] },
+                "/"
+              ]
+            ]
+          },
           "SonarInitSetupUrl": { "Ref": "SonarInitSetupUrl" },
+          "SonarOsPrepUrl": { "Ref": "SonarOsPrepUrl" },
           "SonarSrcUrl": { "Ref": "SonarSrcUrl" },
           "SonarUser": { "Ref": "SonarUser" },
           "SubnetIds": { "Ref": "SubnetId" }
         },
         "TemplateURL": { "Ref": "Ec2Template" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "EfsRes": {
+      "Properties": {
+        "Parameters": {
+          "EfsSg": { "Fn::GetAtt": [ "SgRes", "Outputs.NasSg" ] },
+          "EfsSubnet": {
+            "Fn::Join": [
+              ",",
+              { "Ref": "HaSubnets" }
+            ]
+          },
+          "ServiceTld": { "Ref": "ServiceTld" }
+        },
+        "TemplateURL": { "Ref": "EfsTemplate" },
         "TimeoutInMinutes": "10"
       },
       "Type": "AWS::CloudFormation::Stack"
@@ -455,14 +460,9 @@
           "DbInstanceType": { "Ref": "DbInstanceType" },
           "DbIsMultiAz": "true",
           "DbNodeName": { "Ref": "DbNodeName" },
-          "DbSecurityGroup": {
-            "Fn::GetAtt": [ "SgRes", "Outputs.RdsSg" ]
-          },
+          "DbSecurityGroup": { "Fn::GetAtt": [ "SgRes", "Outputs.RdsSg" ] },
           "DbSubnets": {
-            "Fn::Join": [
-              ",",
-              { "Ref": "HaSubnets" }
-            ]
+            "Fn::Join": [ ",", { "Ref": "HaSubnets" } ]
           },
           "PgsqlVersion": { "Ref": "PgsqlVersion" },
           "TargetVPC": { "Ref": "TargetVPC" }
@@ -474,13 +474,9 @@
     "SgRes": {
       "Properties": {
         "Parameters": {
-          "TargetVPC": {
-            "Ref": "TargetVPC"
-          }
+          "TargetVPC": { "Ref": "TargetVPC" }
         },
-        "TemplateURL": {
-          "Ref": "SgTemplateUri"
-        },
+        "TemplateURL": { "Ref": "SgTemplateUri" },
         "TimeoutInMinutes": "10"
       },
       "Type": "AWS::CloudFormation::Stack"
