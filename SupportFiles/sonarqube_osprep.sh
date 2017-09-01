@@ -13,6 +13,7 @@ do
   export "${ENV}"
 done < /etc/cfn/Sonarqube.envs
 SONARROOTDIR="${SONARQUBE_SHARE_MOUNT}"
+SONARUSER="${SONAR_USER}"
 SHARETYPE="${SONARQUBE_SHARE_TYPE}"
 SHAREURI="${SONARQUBE_SHARE_URI}"
 RPMDEPLST=(
@@ -250,3 +251,8 @@ fi
 printf "Mounting ${SONARROOTDIR}... "
 mount "${SONARROOTDIR}" && echo "Done." || \
   err_exit "Failed to mount ${SONARROOTDIR}"
+
+printf "Ensuring %s is writeable by %s... " "${SONARROOTDIR}" "${SONARUSER}"
+chmod 001777 "${SONARROOTDIR}" && \
+  echo "Done." || \
+  err_exit "Failed setting perms on ${SONARROOTDIR}"
