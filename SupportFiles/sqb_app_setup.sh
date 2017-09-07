@@ -60,8 +60,19 @@ then
    printf "Unzipping Sonarqube... "
    unzip -qq /tmp/sonarqube.zip && echo "Success." || \
       err_exit 'Failed to de-archive Sonarqube ZIP.'
+
+   # Pull down plugins
+   if [[ ! -z ${SONARQUBE_PLUGIN_LOC+xxx} ]]
+   then
+      echo "Pulling down plugins..."
+      aws s3 sync --delete ${SONARQUBE_PLUGIN_LOC} \
+        ${SQBROOT}/extensions/plugins && \
+          printf "\nDone downloading plugins!\n"
+   fi
+
    printf "Renaming dir..."
-   mv "${SQBROOT}" sonarqube
+   mv "${SQBROOT}" sonarqube && echo "Success." || \
+      err_exit 'Failed to rename dir.'
 fi
 
 # Create null Sonar properties file with proper SEL contexts
@@ -83,6 +94,15 @@ cat << EOF > "${SQBPROP}"
 sonar.jdbc.username=${PGSQLUSER}
 sonar.jdbc.password=${PGSQLPASS}
 sonar.jdbc.url=jdbc:postgresql://${PGSQLHOST}/${PGSQLINST}
+sonar.security.realm=LDAP
+ldap.url=${SONARQUBE_LDAP_URL}
+ldap.realm=${SONARQUBE_LDAP_REALM}
+ldap.StartTLS=${SONARQUBE_LDAP_USETLS}
+ldap.followReferrals=true
+ldap.user.baseDn=${SONARQUBE_LDAP_BASEDN_USERS}
+ldap.group.baseDn=${SONARQUBE_LDAP_BASEDN_GROUPS}
+ldap.group.request=(&(objectClass=group)(member={dn}))
+ldap.group.idAttribute=sAMAccountName
 EOF
 
 # shellcheck disable=SC2181
