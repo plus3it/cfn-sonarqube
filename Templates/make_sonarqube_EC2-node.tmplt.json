@@ -11,6 +11,11 @@
         { "Fn::Equals": [ { "Ref": "NoPublicIp" }, "true" ] }
       ]
     },
+    "HasPluginPath": {
+      "Fn::Not": [
+        { "Fn::Equals": [ { "Ref": "PluginS3Location" }, "" ] }
+      ]
+    },
     "Reboot": {
       "Fn::Not": [
         { "Fn::Equals": [ { "Ref": "NoReboot" }, "true" ] }
@@ -232,6 +237,11 @@
     "PipRpm": {
       "Default": "python2-pip",
       "Description": "Name of preferred pip RPM.",
+      "Type": "String"
+    },
+    "PluginS3Location": {
+      "AllowedPattern": "^$|^s3://.*$",
+      "Description": "S3-path containing Sonarqube plugins.",
       "Type": "String"
     },
     "ProvisionUser": {
@@ -566,6 +576,22 @@
                 "      export SONARQUBE_SHARE_TYPE=\"",
                        { "Ref": "SonarHomeShareType" },
                        "\"\n",
+                {
+                  "Fn::If": [
+                    "HasPluginPath",
+                    {
+                      "Fn::Join" : [
+                        "",
+                        [
+                          "      export SONARQUBE_PLUGIN_LOC=",
+                                 { "Ref": "PluginS3Location" },
+                                 "\n"
+                        ]
+                      ]
+                    },
+                    { "Ref": "AWS::NoValue" }
+                  ]
+                },
                 "      \n",
                 "      # Helper function\n",
                 "      function err_exit {\n",
