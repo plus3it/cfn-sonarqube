@@ -318,6 +318,11 @@
       "Description": "Name of preferred pip RPM.",
       "Type": "String"
     },
+    "PluginS3Location": {
+      "AllowedPattern": "^$|^s3://.*$",
+      "Description": "S3-path containing Sonarqube plugins.",
+      "Type": "String"
+    },
     "ProvisionUser": {
       "AllowedPattern": "[a-z0-9]{6,12}+",
       "ConstraintDescription": "Alphanumeric string between 6 and 12 characters.",
@@ -443,6 +448,7 @@
           "NoReboot": { "Ref": "NoReboot" },
           "PipIndexFips": { "Ref": "PipIndexFips" },
           "PipRpm": { "Ref": "PipRpm" },
+          "PluginS3Location": { "Ref": "PluginS3Location" },
           "ProvisionUser": { "Ref": "ProvisionUser" },
           "PyStache": { "Ref": "PyStache" },
           "SecurityGroupIds": {
