@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC2015
+# shellcheck disable=SC2015,SC2155
 #
 # Script to install Sonarqube and dependencies
 #
@@ -13,6 +13,7 @@ do
   export "${ENV}"
 done < /etc/cfn/Sonarqube.envs
 SONARROOTDIR="${SONARQUBE_SHARE_MOUNT}"
+# shellcheck disable=SC2153
 SONARUSER="${SONAR_USER}"
 SHARETYPE="${SONARQUBE_SHARE_TYPE}"
 SHAREURI="${SONARQUBE_SHARE_URI}"
@@ -248,7 +249,7 @@ else
       err_exit "Failed to create Sonarqube root-dir"
 fi
 
-printf "Mounting ${SONARROOTDIR}... "
+printf "Mounting %s... " "${SONARROOTDIR}"
 mount "${SONARROOTDIR}" && echo "Done." || \
   err_exit "Failed to mount ${SONARROOTDIR}"
 
