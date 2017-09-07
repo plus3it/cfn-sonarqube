@@ -221,6 +221,60 @@
       "Description": "Public/private key pairs allowing the provisioning-user to securely connect to the instance after it launches.",
       "Type": "AWS::EC2::KeyPair::KeyName"
     },
+    "LdapAuthType": {
+      "AllowedValues": [
+        "simple",
+        "CRAM-MD5",
+        "DIGEST-MD5",
+        "GSSAPI"
+      ],
+      "Default": "simple",
+      "Description": "Authentication-type to use with directory-service.",
+      "Type": "String"
+    },
+    "LdapBaseDnGroups": {
+      "Default": "",
+      "Description": "Directory-node to descend from when searching for group memberships.",
+      "Type": "String"
+    },
+    "LdapBaseDnUsers": {
+      "Default": "",
+      "Description": "Directory-node to descend from when searching for usernames.",
+      "Type": "String"
+    },
+    "LdapBindDn": {
+      "Default": "",
+      "Description": "Distinguished-name of the authentication proxy-user account.",
+      "Type": "String"
+    },
+    "LdapBindPassword": {
+      "Default": "",
+      "Description": "Password of the authentication proxy-user account.",
+      "Type": "String"
+    },
+    "LdapRealm": {
+      "Description": "FQDN-syle realm-name for directory objects.",
+      "Type": "String"
+    },
+    "LdapUrl": {
+      "Default": "",
+      "Description": "URL to connect to in order access a directory-service source.",
+      "Type": "String"
+    },
+    "LdapUseStartTLS": {
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "Directory-node to descend from when searching for usernames.",
+      "Type": "String"
+    },
+    "LdapUserQuery": {
+      "Default": "(&(objectClass=user)(sAMAccountName={login}))",
+      "Description": "Search-expression used to find users in directory",
+      "Type": "String"
+    },
     "NoPublicIp": {
       "AllowedValues": [
         "false",
