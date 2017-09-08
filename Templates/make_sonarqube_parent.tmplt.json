@@ -44,8 +44,6 @@
             "SonarOsPrepUrl",
             "SonarAppSetupUrl",
             "SonarInitSetupUrl",
-            "SonarHomeShareUri",
-            "SonarHomeMountLoc",
             "SonarqubeBackupBucket"
           ]
         },
@@ -355,14 +353,6 @@
       "Description": "URL of the Sonarqube setup script.",
       "Type": "String"
     },
-    "SonarHomeMountLoc": {
-      "Description": "Mount-location of Sonarqube service.",
-      "Type": "String"
-    },
-    "SonarHomeShareUri": {
-      "Description": "Share-path of shared Sonarqube-home.",
-      "Type": "String"
-    },
     "SonarInitSetupUrl": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URL of the Sonarqube service setup script.",
@@ -468,17 +458,6 @@
           "SonarDbInst": { "Ref": "DbInstanceName" },
           "SonarDbPass": { "Ref": "DbAdminPass" },
           "SonarDbUser": { "Ref": "DbAdminName" },
-          "SonarHomeMountLoc": { "Ref": "SonarHomeMountLoc" },
-          "SonarHomeShareType": "nfs",
-          "SonarHomeShareUri": {
-            "Fn::Join": [
-              ":",
-              [
-                { "Fn::GetAtt": [ "EfsRes", "Outputs.EfsEndpoint" ] },
-                "/"
-              ]
-            ]
-          },
           "SonarInitSetupUrl": { "Ref": "SonarInitSetupUrl" },
           "SonarOsPrepUrl": { "Ref": "SonarOsPrepUrl" },
           "SonarSrcUrl": { "Ref": "SonarSrcUrl" },
@@ -486,23 +465,6 @@
           "SubnetIds": { "Ref": "SubnetId" }
         },
         "TemplateURL": { "Ref": "Ec2Template" },
-        "TimeoutInMinutes": "10"
-      },
-      "Type": "AWS::CloudFormation::Stack"
-    },
-    "EfsRes": {
-      "Properties": {
-        "Parameters": {
-          "EfsSg": { "Fn::GetAtt": [ "SgRes", "Outputs.NasSg" ] },
-          "EfsSubnet": {
-            "Fn::Join": [
-              ",",
-              { "Ref": "HaSubnets" }
-            ]
-          },
-          "ServiceTld": { "Ref": "ServiceTld" }
-        },
-        "TemplateURL": { "Ref": "EfsTemplate" },
         "TimeoutInMinutes": "10"
       },
       "Type": "AWS::CloudFormation::Stack"
