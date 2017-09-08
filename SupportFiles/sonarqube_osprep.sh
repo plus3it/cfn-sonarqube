@@ -12,11 +12,8 @@ do
   # shellcheck disable=SC2163
   export "${ENV}"
 done < /etc/cfn/Sonarqube.envs
-SONARROOTDIR="${SONARQUBE_SHARE_MOUNT}"
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153,SC2034
 SONARUSER="${SONAR_USER}"
-SHARETYPE="${SONARQUBE_SHARE_TYPE}"
-SHAREURI="${SONARQUBE_SHARE_URI}"
 RPMDEPLST=(
       postgresql
       postgresql-jdbc
