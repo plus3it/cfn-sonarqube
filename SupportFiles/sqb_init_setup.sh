@@ -59,7 +59,8 @@ ExecReload=/home/sonarqube/sonarqube/bin/linux-x86-64/sonar.sh restart
 PIDFile=/home/sonarqube/sonarqube/bin/linux-x86-64/SonarQube.pid
 Type=forking
 User=${SONARUSER}
-
+Restart=Always
+RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
