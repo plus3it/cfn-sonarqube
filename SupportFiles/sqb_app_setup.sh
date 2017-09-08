@@ -98,9 +98,12 @@ sonar.security.realm=LDAP
 ldap.url=${SONARQUBE_LDAP_URL}
 ldap.realm=${SONARQUBE_LDAP_REALM}
 ldap.StartTLS=${SONARQUBE_LDAP_USETLS}
+ldap.bindDn=${SONARQUBE_LDAP_BINDDN}
+ldap.bindPassword=${SONARQUBE_LDAP_BINDPASS}
 ldap.followReferrals=true
 ldap.user.baseDn=${SONARQUBE_LDAP_BASEDN_USERS}
 ldap.group.baseDn=${SONARQUBE_LDAP_BASEDN_GROUPS}
+ldap.user.request=${SONARQUBE_LDAP_QUERYSTRING}
 ldap.group.request=(&(objectClass=group)(member={dn}))
 ldap.group.idAttribute=sAMAccountName
 EOF
