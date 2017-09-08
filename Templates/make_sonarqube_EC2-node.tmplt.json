@@ -57,9 +57,6 @@
           "Parameters": [
             "SonarOsPrepUrl",
             "SonarUser",
-            "SonarHomeShareUri",
-            "SonarHomeShareType",
-            "SonarHomeMountLoc",
             "SonarSrcUrl",
             "SonarInitSetupUrl",
             "SonarAppSetupUrl"
@@ -335,23 +332,6 @@
       "Description": "Name of the Sonarqube master database-user.",
       "Type": "String"
     },
-    "SonarHomeMountLoc": {
-      "Description": "Mount-location of Sonarqube service.",
-      "Type": "String"
-    },
-    "SonarHomeShareUri": {
-      "Default": "",
-      "Description": "Share-path of shared Sonarqube-home.",
-      "Type": "String"
-    },
-    "SonarHomeShareType": {
-      "AllowedValues": [
-        "glusterfs",
-        "nfs"
-      ],
-      "Description": "Type of network share hosting persisted Jira-home content.",
-      "Type": "String"
-    },
     "SonarInitSetupUrl": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URL of the Sonarqube service setup script.",
@@ -620,15 +600,6 @@
                        "\"\n",
                 "      export SONARQUBE_OS_PREP=\"",
                        { "Ref": "SonarOsPrepUrl" },
-                       "\"\n",
-                "      export SONARQUBE_SHARE_MOUNT=\"",
-                       { "Ref": "SonarHomeMountLoc" },
-                       "\"\n",
-                "      export SONARQUBE_SHARE_URI=\"",
-                       { "Ref": "SonarHomeShareUri" },
-                       "\"\n",
-                "      export SONARQUBE_SHARE_TYPE=\"",
-                       { "Ref": "SonarHomeShareType" },
                        "\"\n",
                 "      export SONARQUBE_LDAP_AUTHTYPE=\"",
                        { "Ref": "LdapAuthType" },
