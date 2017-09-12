@@ -47,6 +47,7 @@
             "AdminPubkeyURL",
             "SecurityGroupIds",
             "InstanceProfile",
+            "InstanceRole",
             "NoReboot"
           ]
         },
@@ -168,6 +169,10 @@
     },
     "InstanceProfile": {
       "Description": "IAM instance profile to apply to the instance(s)",
+      "Type": "String"
+    },
+    "InstanceRole": {
+      "Description": "IAM instance role to apply to the cfn helpers",
       "Type": "String"
     },
     "InstanceType": {
@@ -389,7 +394,7 @@
                               "",
                               [
                                 "role=",
-                                { "Ref": "InstanceProfile" },
+                                { "Ref": "InstanceRole" },
                                 "\n"
                               ]
                             ]
@@ -440,7 +445,7 @@
                               "",
                               [
                                 " --role ",
-                                { "Ref": "InstanceProfile" }
+                                { "Ref": "InstanceRole" }
                               ]
                             ]
                           },
@@ -670,11 +675,15 @@
                        " --upgrade pip\n",
                 "      \n",
                 "      # Initialize the Cfn subsystems\n",
-                "      /opt/aws/bin/cfn-init -s ",
+                "      /opt/aws/bin/cfn-init --stack ",
                        { "Ref": "AWS::StackName" },
-                       " -r SonarqubeEC2 ",
+                       " --resource SonarqubeEC2 ",
                        " --region ",
                        { "Ref": "AWS::Region" },
+                       " --role ",
+                       { "Ref": "InstanceRole" },
+                       " --url ",
+                       { "Ref": "CfnEndpointUrl"},
                        " && echo 'Successfully ran cfn-init'",
                        " || err_exit 'Failed to run cfn-init' > /dev/stderr\n",
                 "      \n",
@@ -748,8 +757,13 @@
                 "      # Signal Cfn that we're good\n",
                 "      /opt/aws/bin/cfn-signal -e 0 --stack ",
                        { "Ref": "AWS::StackName" },
-                       " --resource SonarqubeEC2 --url ",
-                       { "Ref": "CfnEndpointUrl" },
+                       " --resource SonarqubeEC2 ",
+                       " --region ",
+                       { "Ref": "AWS::Region" },
+                       " --role ",
+                       { "Ref": "InstanceRole" },
+                       " --url ",
+                       { "Ref": "CfnEndpointUrl"},
                        "\n"
               ]
             ]

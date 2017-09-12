@@ -15,7 +15,7 @@
       "Description": "ARN of the instance role",
       "Value": { "Fn::GetAtt": [ "InstanceRole", "Arn" ] }
     },
-    "InstanceRoleProfile": {
+    "InstanceProfile": {
       "Description": "Profile of the instance role",
       "Value": { "Ref": "InstanceProfile" }
     }
@@ -70,7 +70,8 @@
             },
             {
               "Action": [
-                "cloudformation:DescribeStackResource"
+                "cloudformation:DescribeStackResource",
+                "cloudformation:SignalResource"
               ],
               "Effect": "Allow",
               "Resource": [

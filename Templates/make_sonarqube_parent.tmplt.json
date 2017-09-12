@@ -426,7 +426,10 @@
           "EpelRepo": { "Ref": "EpelRepo" },
           "Hostname": { "Ref": "Hostname" },
           "InstanceProfile": {
-            "Fn::GetAtt": [ "IamRes", "Outputs.InstanceRoleProfile" ]
+            "Fn::GetAtt": [ "IamRes", "Outputs.InstanceProfile" ]
+          },
+          "InstanceRole": {
+            "Fn::GetAtt": [ "IamRes", "Outputs.InstanceRole" ]
           },
           "InstanceType": { "Ref": "InstanceType" },
           "KeyPairName": { "Ref": "KeyPairName" },
