@@ -128,6 +128,15 @@
       }
     }
   },
+  "Outputs": {
+    "SonarqubeInstanceId": {
+      "Description": "Instance ID",
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-InstanceId" }
+      },
+      "Value": { "Ref": "SonarqubeEC2" }
+    }
+  },
   "Parameters": {
     "AdminPubkeyURL": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
@@ -535,14 +544,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": {
-              "Fn::Join": [
-                "",
-                [
-                  { "Ref": "AWS::StackName" }
-                ]
-              ]
-            }
+            "Value": { "Ref": "AWS::StackName" }
           }
         ],
         "UserData": {

@@ -14,7 +14,8 @@
             "RdsTemplateUri",
             "BucketTemplate",
             "IamTemplate",
-            "Ec2Template"
+            "Ec2Template",
+            "ElbTemplate"
           ]
         },
         {
@@ -88,6 +89,13 @@
       "Description": "ID of the AMI to launch",
       "Type": "String"
     },
+    "BackendTimeout": {
+      "Default": "600",
+      "Description": "How long - in seconds - back-end connection may be idle before attempting session-cleanup",
+      "MinValue": "60",
+      "MaxValue": "3600",
+      "Type": "Number"
+    },
     "BucketTemplate": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URI for the template that creates SonarQube's S3 bucket(s).",
@@ -157,6 +165,15 @@
     "EfsTemplate": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URI for the template that creates the EFS service to host SonarQube's persistent data.",
+      "Type": "String"
+    },
+    "ElbSubnets": {
+      "Description": "Select three subnets - each from different Availability Zones.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "ElbTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL to the child-template for creating the Sonarqube ELB.",
       "Type": "String"
     },
     "EpelRepo": {
@@ -363,6 +380,24 @@
       "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
       "Type": "String"
     },
+    "SonarqubeListenPort": {
+      "Default": "443",
+      "Description": "TCP Port number on which the Sonarqube ELB listens for requests.",
+      "MaxValue": "65535",
+      "MinValue": "1",
+      "Type": "Number"
+    },
+    "SonarqubeListenerCert": {
+      "Default": "",
+      "Description": "Name/ID of the ACM-managed SSL Certificate to protect public listener.",
+      "Type": "String"
+    },
+    "SonarqubeServicePort": {
+      "Default": "9000",
+      "Description": "TCP Port number that the Sonarqube host listens to.",
+      "MaxValue": "65535",
+      "Type": "Number"
+    },
     "SubnetId": {
       "Description": "Subnet to associate to the Instance",
       "Type": "AWS::EC2::Subnet::Id"
@@ -423,7 +458,7 @@
           "LdapUseStartTLS": { "Ref": "LdapUseStartTLS" },
           "LdapUserQuery": { "Ref": "LdapUserQuery" },
           "NoPublicIp": "true",
-          "NoReboot": "false" ,
+          "NoReboot": "false",
           "PipIndexFips": { "Ref": "PipIndexFips" },
           "PipRpm": { "Ref": "PipRpm" },
           "PluginS3Location": { "Ref": "PluginS3Location" },
@@ -457,10 +492,39 @@
       },
       "Type": "AWS::CloudFormation::Stack"
     },
+    "ElbRes": {
+      "Properties": {
+        "Parameters": {
+          "BackendTimeout": { "Ref": "BackendTimeout" },
+          "HaSubnets": {
+            "Fn::Join": [
+              ",",
+              [
+                { "Ref": "ElbSubnets" },
+                ""
+              ]
+            ]
+          },
+          "ProxyPrettyName": { "Ref": "AWS::StackName" },
+          "SecurityGroupIds": { "Fn::GetAtt": [ "SgRes", "Outputs.AppSg" ] },
+          "SonarqubeInstanceId": {
+            "Fn::GetAtt": [ "Ec2Res", "Outputs.SonarqubeInstanceId" ]
+          },
+          "SonarqubeListenPort": "443",
+          "SonarqubeListenerCert": { "Ref": "SonarqubeListenerCert" },
+          "SonarqubeServicePort": { "Ref": "SonarqubeServicePort" },
+          "TargetVPC": { "Ref": "TargetVPC" }
+        },
+        "TemplateURL": { "Ref": "ElbTemplate" }
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
     "IamRes": {
       "Properties": {
         "Parameters": {
-          "BackupBucketArn": { "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketArn" ] },
+          "BackupBucketArn": {
+            "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketArn" ]
+          },
           "RolePrefix": { "Ref": "RolePrefix" },
           "ServiceTld": { "Ref": "ServiceTld" }
         },
@@ -481,7 +545,13 @@
           "DbNodeName": { "Ref": "DbNodeName" },
           "DbSecurityGroup": { "Fn::GetAtt": [ "SgRes", "Outputs.RdsSg" ] },
           "DbSubnets": {
-            "Fn::Join": [ ",", { "Ref": "HaSubnets" } ]
+            "Fn::Join": [
+              ",",
+              [
+                { "Ref": "HaSubnets" },
+                ""
+              ]
+            ]
           },
           "PgsqlVersion": { "Ref": "PgsqlVersion" },
           "TargetVPC": { "Ref": "TargetVPC" }

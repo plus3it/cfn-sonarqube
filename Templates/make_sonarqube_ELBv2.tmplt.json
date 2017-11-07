@@ -30,6 +30,29 @@
     }
   },
   "Parameters": {
+    "BackendTimeout": {
+      "Default": "600",
+      "Description": "How long - in seconds - back-end connection may be idle before attempting session-cleanup",
+      "MinValue": "60",
+      "MaxValue": "3600",
+      "Type": "Number"
+    },
+    "HaSubnets": {
+      "Description": "Select three subnets - each from different Availability Zones.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "ProxyPrettyName": {
+      "Description": "A short, human-friendly label to assign to the ELB (no capital letters).",
+      "Type": "String"
+    },
+    "SecurityGroupIds": {
+      "Description": "List of security groups to apply to the ELB.",
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "SonarqubeInstanceId": {
+      "Description": "ID of the EC2-instance this template should create a proxy for.",
+      "Type": "String"
+    },
     "SonarqubeListenerCert": {
       "Default": "",
       "Description": "Name/ID of the ACM-managed SSL Certificate to protect public listener.",
@@ -47,22 +70,6 @@
       "Description": "TCP Port number that the Sonarqube host listens to.",
       "MaxValue": "65535",
       "Type": "Number"
-    },
-    "HaSubnets": {
-      "Description": "Select three subnets - each from different Availability Zones.",
-      "Type": "List<AWS::EC2::Subnet::Id>"
-    },
-    "SonarqubeInstanceId": {
-      "Description": "ID of the EC2-instance this template should create a proxy for.",
-      "Type": "String"
-    },
-    "ProxyPrettyName": {
-      "Description": "A short, human-friendly label to assign to the ELB (no capital letters).",
-      "Type": "String"
-    },
-    "SecurityGroupIds": {
-      "Description": "List of security groups to apply to the ELB.",
-      "Type": "List<AWS::EC2::SecurityGroup::Id>"
     },
     "TargetVPC": {
       "AllowedPattern": "^vpc-[0-9a-f]*$",
