@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": {},
-  "Description": "Template for creating Security groups used to support Artifactory",
+  "Description": "Template for creating Security groups used to support Sonarqube",
   "Mappings": {},
   "Outputs": {
     "AppSg": {
@@ -58,7 +58,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "Artifactory application Security Group"
+            "Value": "Sonarqube application Security Group"
           }
         ],
         "VpcId": {
@@ -73,7 +73,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "Artifactory EC2/Storage Security Group"
+            "Value": "Sonarqube EC2/Storage Security Group"
           }
         ],
         "VpcId": {
@@ -88,7 +88,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "Artifactory EC2/RDS Security Group"
+            "Value": "Sonarqube EC2/RDS Security Group"
           }
         ],
         "VpcId": {
