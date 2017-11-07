@@ -1,0 +1,163 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": {},
+  "Description": "Template for creating a public ELB for users to connect through in order to connect to the Sonarqube service.",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Parameters": [
+            "SonarqubeInstanceId",
+            "ProxyPrettyName",
+            "TargetVPC",
+            "HaSubnets",
+            "SecurityGroupIds",
+            "SonarqubeListenPort",
+            "SonarqubeServicePort",
+            "SonarqubeListenerCert"
+          ]
+        }
+      ]
+    }
+  },
+  "Outputs": {
+    "SonarqubeAlbFqdn": {
+      "Description": "Sonarqube front-end's IP address",
+      "Export": {
+        "Name" : { "Fn::Sub": "${AWS::StackName}-AlbDnsName" }
+      },
+      "Value": { "Fn::GetAtt": [ "SonarqubePubAlbLoadBalancer", "DNSName" ] }
+    }
+  },
+  "Parameters": {
+    "SonarqubeListenerCert": {
+      "Default": "",
+      "Description": "Name/ID of the ACM-managed SSL Certificate to protect public listener.",
+      "Type": "String"
+    },
+    "SonarqubeListenPort": {
+      "Default": "443",
+      "Description": "TCP Port number on which the Sonarqube ELB listens for requests.",
+      "MaxValue": "65535",
+      "MinValue": "1",
+      "Type": "Number"
+    },
+    "SonarqubeServicePort": {
+      "Default": "9000",
+      "Description": "TCP Port number that the Sonarqube host listens to.",
+      "MaxValue": "65535",
+      "Type": "Number"
+    },
+    "HaSubnets": {
+      "Description": "Select three subnets - each from different Availability Zones.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "SonarqubeInstanceId": {
+      "Description": "ID of the EC2-instance this template should create a proxy for.",
+      "Type": "String"
+    },
+    "ProxyPrettyName": {
+      "Description": "A short, human-friendly label to assign to the ELB (no capital letters).",
+      "Type": "String"
+    },
+    "SecurityGroupIds": {
+      "Description": "List of security groups to apply to the ELB.",
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "TargetVPC": {
+      "AllowedPattern": "^vpc-[0-9a-f]*$",
+      "Description": "ID of the VPC to deploy cluster nodes into.",
+      "Type": "AWS::EC2::VPC::Id"
+    }
+  },
+  "Resources": {
+    "SonarqubePubAlbListener": {
+      "Properties": {
+        "Certificates": [
+          {
+            "CertificateArn": {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  { "Ref": "AWS::Partition" },
+                  ":acm:",
+                  { "Ref": "AWS::Region" },
+                  ":",
+                  { "Ref": "AWS::AccountId" },
+                  ":",
+                  "certificate/",
+                  { "Ref": "SonarqubeListenerCert" }
+                ]
+              ]
+            }
+          }
+        ],
+        "DefaultActions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": { "Ref": "SonarqubePubAlbTgroup" }
+          }
+        ],
+        "LoadBalancerArn": { "Ref": "SonarqubePubAlbLoadBalancer" },
+        "Port": { "Ref": "SonarqubeListenPort" },
+        "Protocol": "HTTPS"
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::Listener"
+    },
+    "SonarqubePubAlbLoadBalancer": {
+      "Properties": {
+        "Name": { "Ref": "ProxyPrettyName" },
+        "Scheme": "internet-facing",
+        "SecurityGroups": { "Ref": "SecurityGroupIds" },
+        "Subnets": { "Ref": "HaSubnets" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Sonarqube front-end ELB"
+          }
+        ],
+        "Type": "application"
+      },
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    },
+    "SonarqubePubAlbTgroup": {
+      "Properties": {
+        "HealthCheckPath": "/index.html",
+        "HealthyThresholdCount": "5",
+        "Name": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Fn::Select": [
+                  "0",
+                  {
+                    "Fn::Split": [
+                      "-",
+                      {
+                        "Ref": "AWS::StackName"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "TargetGroup"
+            ]
+          ]
+        },
+        "Port": { "Ref": "SonarqubeServicePort" },
+        "Protocol": "HTTP",
+        "Targets": [
+          {
+            "Id": { "Ref": "SonarqubeInstanceId" },
+            "Port": { "Ref": "SonarqubeServicePort" }
+          }
+        ],
+        "UnhealthyThresholdCount": "2",
+        "VpcId": { "Ref": "TargetVPC" }
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": {},
+  "Description": "Template for creating a public ELB for users to connect through the privately-hosted Sonarqube service.",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Parameters": [
+            "SonarqubeInstanceId",
+            "ProxyPrettyName",
+            "HaSubnets",
+            "SecurityGroupIds",
+            "SonarqubeListenPort",
+            "SonarqubeServicePort",
+            "SonarqubeListenerCert",
+            "BackendTimeout"
+          ]
+        }
+      ]
+    }
+  },
+  "Outputs": {
+    "SonarqubeElbFqdn": {
+      "Description": "Sonarqube front-end's IP address",
+      "Export": {
+        "Name" : { "Fn::Sub": "${AWS::StackName}-ElbDnsName" }
+      },
+      "Value": { "Fn::GetAtt": [ "SonarqubePubElb", "DNSName" ] }
+    }
+  },
+  "Parameters": {
+    "BackendTimeout": {
+      "Default": "600",
+      "Description": "How long - in seconds - back-end connection may be idle before attempting session-cleanup",
+      "MinValue": "60",
+      "MaxValue": "3600",
+      "Type": "Number"
+    },
+    "SonarqubeListenerCert": {
+      "Default": "",
+      "Description": "Name/ID of the ACM-managed SSL Certificate to protect public listener.",
+      "Type": "String"
+    },
+    "SonarqubeListenPort": {
+      "Default": "443",
+      "Description": "TCP Port number on which the Sonarqube ELB listens for requests.",
+      "MaxValue": "65535",
+      "MinValue": "1",
+      "Type": "Number"
+    },
+    "SonarqubeServicePort": {
+      "Default": "9000",
+      "Description": "TCP Port number that the Sonarqube host listens to.",
+      "MaxValue": "65535",
+      "Type": "Number"
+    },
+    "HaSubnets": {
+      "Description": "Select three subnets - each from different Availability Zones.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "SonarqubeInstanceId": {
+      "Description": "ID of the EC2-instance this template should create a proxy for.",
+      "Type": "String"
+    },
+    "ProxyPrettyName": {
+      "Description": "A short, human-friendly label to assign to the ELB (no capital letters).",
+      "Type": "String"
+    },
+    "SecurityGroupIds": {
+      "Description": "List of security groups to apply to the ELB.",
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    }
+  },
+  "Resources": {
+    "SonarqubePubElb": {
+      "Metadata": {},
+      "Properties": {
+        "ConnectionSettings": {
+          "IdleTimeout": { "Ref": "BackendTimeout" }
+        },
+        "CrossZone": "true",
+        "HealthCheck": {
+          "HealthyThreshold": "5",
+          "Interval": "30",
+          "Target": {
+            "Fn::Join": [
+              "",
+              [
+                "HTTP:",
+                { "Ref": "SonarqubeServicePort" },
+                "/index.html"
+              ]
+            ]
+          },
+          "Timeout": "5",
+          "UnhealthyThreshold": "2"
+        },
+        "Instances": [ { "Ref": "SonarqubeInstanceId" } ],
+        "Listeners": [
+          {
+            "InstancePort": { "Ref": "SonarqubeServicePort" },
+            "InstanceProtocol": "HTTP",
+            "LoadBalancerPort": { "Ref": "SonarqubeListenPort" },
+            "Protocol": "HTTPS",
+            "SSLCertificateId": {
+              "Fn::Join": [
+                ":",
+                [
+                  "arn:aws:acm",
+                  { "Ref" : "AWS::Region" },
+                  { "Ref" : "AWS::AccountId" },
+                  { "Fn::Join": [
+                      "",
+                      [
+                        "certificate/",
+                        { "Ref": "SonarqubeListenerCert" }
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            }
+          }
+        ],
+        "LoadBalancerName": { "Ref": "ProxyPrettyName" },
+        "Scheme": "internet-facing",
+        "SecurityGroups": { "Ref": "SecurityGroupIds" },
+        "Subnets": { "Ref": "HaSubnets" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Sonarqube front-end ELB"
+          }
+        ]
+      },
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer"
+    }
+  }
+}

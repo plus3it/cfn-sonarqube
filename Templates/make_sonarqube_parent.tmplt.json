@@ -27,11 +27,9 @@
             "AmiId",
             "InstanceType",
             "SubnetId",
-            "NoPublicIp",
             "ProvisionUser",
             "KeyPairName",
-            "AdminPubkeyURL",
-            "NoReboot"
+            "AdminPubkeyURL"
           ]
         },
         {
@@ -274,24 +272,6 @@
       "Description": "Search-expression used to find users in directory",
       "Type": "String"
     },
-    "NoPublicIp": {
-      "AllowedValues": [
-        "false",
-        "true"
-      ],
-      "Default": "true",
-      "Description": "Controls whether to assign the instance a public IP. Recommended to leave at \"true\" _unless_ launching in a public subnet",
-      "Type": "String"
-    },
-    "NoReboot": {
-      "AllowedValues": [
-        "false",
-        "true"
-      ],
-      "Default": "false",
-      "Description": "Controls whether to reboot the instance as the last step of cfn-init execution",
-      "Type": "String"
-    },
     "PgsqlVersion": {
       "AllowedValues": [
         "9.6.3",
@@ -442,8 +422,8 @@
           "LdapUrl": { "Ref": "LdapUrl" },
           "LdapUseStartTLS": { "Ref": "LdapUseStartTLS" },
           "LdapUserQuery": { "Ref": "LdapUserQuery" },
-          "NoPublicIp": { "Ref": "NoPublicIp" },
-          "NoReboot": { "Ref": "NoReboot" },
+          "NoPublicIp": "true",
+          "NoReboot": "false" ,
           "PipIndexFips": { "Ref": "PipIndexFips" },
           "PipRpm": { "Ref": "PipRpm" },
           "PluginS3Location": { "Ref": "PluginS3Location" },
