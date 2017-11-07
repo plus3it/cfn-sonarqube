@@ -28,9 +28,11 @@
             "AmiId",
             "InstanceType",
             "SubnetId",
+            "NoPublicIp",
             "ProvisionUser",
             "KeyPairName",
-            "AdminPubkeyURL"
+            "AdminPubkeyURL",
+            "NoReboot"
           ]
         },
         {
@@ -58,6 +60,18 @@
             "DbNodeName",
             "DbAdminName",
             "DbAdminPass"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Rev-Proxy Info"
+          },
+          "Parameters": [
+            "ProxyPrettyName",
+            "SonarqubeListenerCert",
+            "SonarqubeServicePort",
+            "ElbSubnets",
+            "BackendTimeout"
           ]
         },
         {
@@ -92,8 +106,8 @@
     "BackendTimeout": {
       "Default": "600",
       "Description": "How long - in seconds - back-end connection may be idle before attempting session-cleanup",
-      "MinValue": "60",
       "MaxValue": "3600",
+      "MinValue": "60",
       "Type": "Number"
     },
     "BucketTemplate": {
@@ -168,12 +182,12 @@
       "Type": "String"
     },
     "ElbSubnets": {
-      "Description": "Select three subnets - each from different Availability Zones.",
+      "Description": "Public-facing subnets for ELB to proxy requests from.",
       "Type": "List<AWS::EC2::Subnet::Id>"
     },
     "ElbTemplate": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL to the child-template for creating the Sonarqube ELB.",
+      "Description": "URI for the template that creates the ELB providing public-to-private reverse-proxy service.",
       "Type": "String"
     },
     "EpelRepo": {
@@ -289,6 +303,24 @@
       "Description": "Search-expression used to find users in directory",
       "Type": "String"
     },
+    "NoPublicIp": {
+      "AllowedValues": [
+        "false",
+        "true"
+      ],
+      "Default": "true",
+      "Description": "Controls whether to assign the instance a public IP. Recommended to leave at \"true\" _unless_ launching in a public subnet",
+      "Type": "String"
+    },
+    "NoReboot": {
+      "AllowedValues": [
+        "false",
+        "true"
+      ],
+      "Default": "false",
+      "Description": "Controls whether to reboot the instance as the last step of cfn-init execution",
+      "Type": "String"
+    },
     "PgsqlVersion": {
       "AllowedValues": [
         "9.6.3",
@@ -324,6 +356,10 @@
       "ConstraintDescription": "Alphanumeric string between 6 and 12 characters.",
       "Default": "sonarbuild",
       "Description": "Default login user account name.",
+      "Type": "String"
+    },
+    "ProxyPrettyName": {
+      "Description": "A short, human-friendly label to assign to the ELB (no capital letters).",
       "Type": "String"
     },
     "PyStache": {
@@ -379,13 +415,6 @@
       "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$",
       "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
       "Type": "String"
-    },
-    "SonarqubeListenPort": {
-      "Default": "443",
-      "Description": "TCP Port number on which the Sonarqube ELB listens for requests.",
-      "MaxValue": "65535",
-      "MinValue": "1",
-      "Type": "Number"
     },
     "SonarqubeListenerCert": {
       "Default": "",
@@ -457,8 +486,8 @@
           "LdapUrl": { "Ref": "LdapUrl" },
           "LdapUseStartTLS": { "Ref": "LdapUseStartTLS" },
           "LdapUserQuery": { "Ref": "LdapUserQuery" },
-          "NoPublicIp": "true",
-          "NoReboot": "false",
+          "NoPublicIp": { "Ref": "NoPublicIp" },
+          "NoReboot": { "Ref": "NoReboot" },
           "PipIndexFips": { "Ref": "PipIndexFips" },
           "PipRpm": { "Ref": "PipRpm" },
           "PluginS3Location": { "Ref": "PluginS3Location" },
@@ -499,23 +528,28 @@
           "HaSubnets": {
             "Fn::Join": [
               ",",
+              { "Ref": "ElbSubnets" }
+            ]
+          },
+          "ProxyPrettyName": { "Ref": "ProxyPrettyName" },
+          "SecurityGroupIds": { 
+            "Fn::Join": [
+              ",",
               [
-                { "Ref": "ElbSubnets" },
-                ""
+                { "Fn::GetAtt": [ "SgRes", "Outputs.AppSg" ] }
               ]
             ]
           },
-          "ProxyPrettyName": { "Ref": "AWS::StackName" },
-          "SecurityGroupIds": { "Fn::GetAtt": [ "SgRes", "Outputs.AppSg" ] },
           "SonarqubeInstanceId": {
             "Fn::GetAtt": [ "Ec2Res", "Outputs.SonarqubeInstanceId" ]
           },
-          "SonarqubeListenPort": "443",
           "SonarqubeListenerCert": { "Ref": "SonarqubeListenerCert" },
+          "SonarqubeListenPort": "443",
           "SonarqubeServicePort": { "Ref": "SonarqubeServicePort" },
           "TargetVPC": { "Ref": "TargetVPC" }
         },
-        "TemplateURL": { "Ref": "ElbTemplate" }
+        "TemplateURL": { "Ref": "ElbTemplate" },
+        "TimeoutInMinutes": "10"
       },
       "Type": "AWS::CloudFormation::Stack"
     },
@@ -547,10 +581,7 @@
           "DbSubnets": {
             "Fn::Join": [
               ",",
-              [
-                { "Ref": "HaSubnets" },
-                ""
-              ]
+              { "Ref": "HaSubnets" }
             ]
           },
           "PgsqlVersion": { "Ref": "PgsqlVersion" },
