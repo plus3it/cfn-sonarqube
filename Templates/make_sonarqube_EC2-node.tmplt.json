@@ -368,13 +368,13 @@
                 "command": "bash -xe /etc/cfn/scripts/sonarqubeprep.sh"
               },
               "20-service-reload": {
-                "command": "systemclt daemon-reload"
+                "command": "systemctl daemon-reload"
               },
               "21-service-enable": {
-                "command": "systemclt enable sonar"
+                "command": "systemctl enable sonar"
               },
               "22-service-start": {
-                "command": "systemclt start sonar"
+                "command": "systemctl start sonar"
               }
             },
             "files": {
