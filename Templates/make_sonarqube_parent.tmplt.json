@@ -122,6 +122,7 @@
     },
     "DbAdminPass": {
       "Description": "Password of the SonarQube master database-user.",
+      "NoEcho": "True",
       "Type": "String"
     },
     "DbDataSize": {
@@ -278,6 +279,7 @@
     "LdapBindPassword": {
       "Default": "",
       "Description": "Password of the authentication proxy-user account.",
+      "NoEcho": "True",
       "Type": "String"
     },
     "LdapRealm": {
@@ -435,6 +437,23 @@
       "AllowedPattern": "^vpc-[0-9a-f]*$",
       "Description": "ID of the VPC to deploy cluster nodes into.",
       "Type": "AWS::EC2::VPC::Id"
+    },
+    "WatchmakerConfig": {
+      "AllowedPattern": "^$|^http[s]?://.*$",
+      "Default": "",
+      "Description": "(Optional) URL to a Watchmaker config file",
+      "Type": "String"
+    },
+    "WatchmakerEnvironment": {
+      "AllowedValues": [
+        "",
+        "dev",
+        "test",
+        "prod"
+      ],
+      "Default": "",
+      "Description": "Environment in which the instance is being deployed",
+      "Type": "String"
     }
   },
   "Resources": {
@@ -469,11 +488,8 @@
           "Domainname": { "Ref": "Domainname" },
           "EpelRepo": { "Ref": "EpelRepo" },
           "Hostname": { "Ref": "Hostname" },
-          "InstanceProfile": {
-            "Fn::GetAtt": [ "IamRes", "Outputs.InstanceProfile" ]
-          },
           "InstanceRole": {
-            "Fn::GetAtt": [ "IamRes", "Outputs.InstanceRole" ]
+            "Fn::GetAtt": [ "IamRes", "Outputs.InstanceProfile" ]
           },
           "InstanceType": { "Ref": "InstanceType" },
           "KeyPairName": { "Ref": "KeyPairName" },
@@ -503,18 +519,19 @@
               ]
             ]
           },
-          "SonarAppSetupUrl": { "Ref": "SonarAppSetupUrl" },
-          "SonarDbHost": {
+          "SonarqubeAppPrepUrl": { "Ref": "SonarAppSetupUrl" },
+          "SonarqubeDbHost": {
             "Fn::GetAtt": [ "RdsRes", "Outputs.RdsEndpointAddress" ]
           },
-          "SonarDbInst": { "Ref": "DbInstanceName" },
-          "SonarDbPass": { "Ref": "DbAdminPass" },
-          "SonarDbUser": { "Ref": "DbAdminName" },
-          "SonarInitSetupUrl": { "Ref": "SonarInitSetupUrl" },
-          "SonarOsPrepUrl": { "Ref": "SonarOsPrepUrl" },
-          "SonarSrcUrl": { "Ref": "SonarSrcUrl" },
-          "SonarUser": { "Ref": "SonarUser" },
-          "SubnetIds": { "Ref": "SubnetId" }
+          "SonarqubeDbInst": { "Ref": "DbInstanceName" },
+          "SonarqubeDbPass": { "Ref": "DbAdminPass" },
+          "SonarqubeDbUser": { "Ref": "DbAdminName" },
+          "SonarqubeOsPrepUrl": { "Ref": "SonarOsPrepUrl" },
+          "SonarqubeSrcUrl": { "Ref": "SonarSrcUrl" },
+          "SonarqubeUser": { "Ref": "SonarUser" },
+          "SubnetId": { "Ref": "SubnetId" },
+          "WatchmakerConfig": { "Ref": "WatchmakerConfig" },
+          "WatchmakerEnvironment": { "Ref": "WatchmakerEnvironment" }
         },
         "TemplateURL": { "Ref": "Ec2Template" },
         "TimeoutInMinutes": "10"
