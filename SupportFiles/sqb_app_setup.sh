@@ -6,7 +6,6 @@
 #
 #################################################################
 PROGNAME="$(basename $0)"
-SQBURL="${1:-UNDEF}"
 while read -r SQENV
 do
    # shellcheck disable=SC2163
@@ -16,7 +15,8 @@ PGSQLUSER=${SONARQUBE_DBUSER:-UNDEF}
 PGSQLPASS=${SONARQUBE_DBPASS:-UNDEF}
 PGSQLHOST=${SONARQUBE_DBHOST:-UNDEF}
 PGSQLINST=${SONARQUBE_DBINST:-UNDEF}
-SONARHOME="$(getent passwd $LOGNAME | cut -d: -f 6)"
+SONARHOME="$(getent passwd $SONAR_USER | cut -d: -f 6)"
+SQBURL="${SONARQUBE_ZIP:-UNDEF}"
 
 # Define an error-handler
 function err_exit {
@@ -116,3 +116,7 @@ else
    # shellcheck disable=SC2016
    err_exit 'Failed to update parms in ${SQBPROP}'
 fi
+
+printf "Setting ownership to %s... " "$SONAR_USER"
+chown -R "$SONAR_USER":"$SONAR_USER" "${SONARHOME}" && echo "Success" || \
+  err_exit "Change-ownership operation experienced failures"
