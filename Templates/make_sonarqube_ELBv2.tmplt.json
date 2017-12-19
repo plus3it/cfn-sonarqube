@@ -1,6 +1,12 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Conditions": {},
+  "Conditions": {
+    "SetPrettyName": {
+      "Fn::Not": [
+        { "Fn::Equals": [ { "Ref": "ProxyPrettyName" }, "" ] }
+      ]
+    }
+  },
   "Description": "Template for creating a public ELB for users to connect through in order to connect to the Sonarqube service.",
   "Metadata": {
     "AWS::CloudFormation::Interface": {
@@ -114,7 +120,13 @@
     },
     "SonarqubePubAlbLoadBalancer": {
       "Properties": {
-        "Name": { "Ref": "ProxyPrettyName" },
+        "Name": {
+          "Fn::If": [
+            "SetPrettyName",
+            { "Ref": "ProxyPrettyName" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
         "Scheme": "internet-facing",
         "SecurityGroups": { "Ref": "SecurityGroupIds" },
         "Subnets": { "Ref": "HaSubnets" },
