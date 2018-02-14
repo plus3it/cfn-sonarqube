@@ -447,6 +447,28 @@
               }
             ]
           },
+          "cronSetup": {
+            "files": {
+              "/etc/cron.d/SonarqubeBkup": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "# Sweep sonarqube home contents to S3\n",
+                      "SHELL=/bin/bash\n",
+                      "PATH=/sbin:/bin:/usr/sbin:/usr/bin\n",
+                      "30/2 * * * * sonarqube aws s3 sync /home/sonarqube s3://",
+                       { "Ref": "BackupBucket" },
+                       "/Backups/$(date '+\\%A')/\n"
+                    ]
+                  ]
+                },
+                "group": "root",
+                "mode": "000700",
+                "owner": "root"
+              }
+            }
+          },
           "finalize": {
             "commands": {
               "10-signal-success": {
