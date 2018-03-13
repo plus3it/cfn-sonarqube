@@ -22,12 +22,11 @@
   },
   "Parameters": {
     "BackupBucketArn": {
-      "Description": "S3 Bucket to host Sonarqube backups",
+      "Description": "S3 Bucket to host Sonarqube backup-data.",
       "Type": "String"
     },
     "PluginsBucket": {
-      "AllowedPattern": "^[a-z0-9].*$",
-      "Description": "S3 bucket hosting Sonarqube installation's feature-extending plugins.",
+      "Description": "S3 Bucket hosting Sonarqube plugins.",
       "Type": "String"
     },
     "RolePrefix": {
@@ -82,8 +81,7 @@
                       "arn:",
                       { "Ref": "AWS::Partition" },
                       ":s3:::",
-                      { "Ref": "PluginsBucket" },
-                      ""
+                      { "Ref": "PluginsBucket" }
                 ]]},
                 { "Fn::Join": [ "", [
                       "arn:",
