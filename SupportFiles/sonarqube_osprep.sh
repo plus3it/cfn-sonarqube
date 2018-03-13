@@ -79,6 +79,8 @@ function SqRepoSetup {
    else
       err_exit "Failed to identify install-type for ${SONARYUMDEF//*\/}"
    fi
+
+   cd "${SAVPWD}" || echo "INFO: The chdir back to ${SAVPWD} failed"
 }
 
 

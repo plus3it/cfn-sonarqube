@@ -38,7 +38,7 @@ fi
 cd "${SONARHOME}" || err_exit "Change-dir failed."
 
 # Install Sonarqube binaries
-printf "Attempting to install ${SONARQUBE_RPM} rpm... "
+printf "Attempting to install %s rpm... " "${SONARQUBE_RPM}"
 yum install -qy "${SONARQUBE_RPM}" && echo "Success" ||
   err_exit "Installation of ${SONARQUBE_RPM} rpm failed"
 
