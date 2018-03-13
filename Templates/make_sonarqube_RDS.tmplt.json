@@ -117,6 +117,7 @@
     },
     "DbSnapshotId": {
       "AllowedPattern": "^$|^arn:.*$",
+      "Default": "",
       "Description": "(Optional) RDS snapshot-ARN to clone new database from.",
       "Type": "String"
     },
