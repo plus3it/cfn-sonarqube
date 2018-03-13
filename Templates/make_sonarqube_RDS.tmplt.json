@@ -8,6 +8,11 @@
           "Fn::Equals": [ { "Ref": "DbNodeName" }, "" ]
         }
       ]
+    },
+    "UseDbSnapshot": {
+      "Fn::Not": [
+        { "Fn::Equals": [ { "Ref": "DbSnapshotId" }, "" ] }
+      ]
     }
   },
   "Description": "This template deploys a small, single- or multi-AZ PGSQL database to support Sonarqube.",
@@ -19,12 +24,13 @@
           "Parameters": [
             "PgsqlVersion",
             "DbInstanceType",
+            "DbSnapshotId",
             "DbNodeName",
             "DbInstanceName",
-            "DbIsMultiAz",
             "DbDataSize",
             "DbStorageType",
             "DbStorageIops",
+            "DbIsMultiAz",
             "DbAdminName",
             "DbAdminPass",
             "TargetVPC",
@@ -48,6 +54,7 @@
     },
     "DbAdminPass": {
       "Description": "Password of the Sonarqube master database-user.",
+      "NoEcho": "True",
       "Type": "String"
     },
     "DbDataSize": {
@@ -81,20 +88,24 @@
         "db.t2.small",
         "db.t2.medium",
         "db.t2.large",
-        "db.m3.medium",
-        "db.m3.large",
-        "db.m3.xlarge",
-        "db.m3.2xlarge",
+        "db.t2.xlarge",
+        "db.t2.2xlarge",
         "db.m4.large",
         "db.m4.xlarge",
         "db.m4.2xlarge",
         "db.m4.4xlarge",
-        "db.m4.10xlarge",
+        "db.m3.medium",
+        "db.m3.large",
+        "db.m3.xlarge",
+        "db.m3.2xlarge",
+        "db.r4.large",
+        "db.r4.xlarge",
+        "db.r4.2xlarge",
+        "db.r4.4xlarge",
         "db.r3.large",
         "db.r3.xlarge",
         "db.r3.2xlarge",
-        "db.r3.4xlarge",
-        "db.r3.8xlarge"
+        "db.r3.4xlarge"
       ],
       "Default": "db.t2.small",
       "Description": "Amazon RDS instance type",
@@ -103,6 +114,11 @@
     "DbSecurityGroup": {
       "Description": "List of security groups to apply to the RDS database.",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "DbSnapshotId": {
+      "AllowedPattern": "^$|^arn:.*$",
+      "Description": "(Optional) RDS snapshot-ARN to clone new database from.",
+      "Type": "String"
     },
     "DbStorageType" : {
       "AllowedValues": [
@@ -127,15 +143,19 @@
     },
     "PgsqlVersion": {
       "AllowedValues": [
+        "9.6.6",
+        "9.6.5",
         "9.6.3",
         "9.6.2",
         "9.6.1",
+        "9.5.10",
+        "9.5.9",
         "9.5.7",
         "9.5.6",
         "9.5.4",
         "9.5.2"
       ],
-      "Default": "9.6.3",
+      "Default": "9.6.6",
       "Description": "The X.Y.Z version of the PostGreSQL database to deploy.",
       "Type": "String"
     },
@@ -161,16 +181,23 @@
             { "Ref": "AWS::NoValue" }
           ]
         },
-        "DBName": { "Ref": "DbInstanceName" },
+        "DBName": {
+          "Fn::If": [
+            "UseDbSnapshot",
+            { "Ref": "AWS::NoValue" },
+            { "Ref": "DbInstanceName" }
+          ]
+        },
+        "DBSnapshotIdentifier": {
+          "Fn::If": [
+            "UseDbSnapshot",
+            { "Ref": "DbSnapshotId" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
         "DBSubnetGroupName" : { "Ref" : "RDSdbSubnetGroup" },
         "Engine": "postgres",
         "EngineVersion": { "Ref": "PgsqlVersion" },
-        "MasterUsername": { "Ref": "DbAdminName" },
-        "MasterUserPassword": { "Ref": "DbAdminPass" },
-        "MultiAZ": { "Ref": "DbIsMultiAz" },
-        "PreferredBackupWindow": "23:30-00:00",
-        "PreferredMaintenanceWindow": "sun:00:30-sun:01:00",
-        "StorageType": { "Ref": "DbStorageType" },
         "Iops": {
           "Fn::If": [
             "SetIops",
@@ -178,7 +205,25 @@
             { "Ref": "AWS::NoValue" }
           ]
         },
+        "MasterUsername": { "Ref": "DbAdminName" },
+        "MasterUserPassword": {
+          "Fn::If": [
+            "UseDbSnapshot",
+            { "Ref": "AWS::NoValue" },
+            { "Ref": "DbAdminPass" }
+          ]
+        },
+        "MultiAZ": { "Ref": "DbIsMultiAz" },
+        "PreferredBackupWindow": "23:30-00:00",
+        "PreferredMaintenanceWindow": "sun:00:30-sun:01:00",
+        "StorageType": { "Ref": "DbStorageType" },
         "PubliclyAccessible": "false",
+        "Tags": [
+          {
+            "Key": "Description",
+            "Value": "SonarQube PgSQL database"
+          }
+        ],
         "VPCSecurityGroups": { "Ref": "DbSecurityGroup" }
       },
       "Type": "AWS::RDS::DBInstance"
