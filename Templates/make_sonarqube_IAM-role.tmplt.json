@@ -22,7 +22,12 @@
   },
   "Parameters": {
     "BackupBucketArn": {
-      "Description": "S3 Bucket to host Jira backups",
+      "Description": "S3 Bucket to host Sonarqube backups",
+      "Type": "String"
+    },
+    "PluginsBucket": {
+      "AllowedPattern": "^[a-z0-9].*$",
+      "Description": "S3 bucket hosting Sonarqube installation's feature-extending plugins.",
       "Type": "String"
     },
     "RolePrefix": {
@@ -58,6 +63,37 @@
                 ]]}
               ],
               "Sid": "BackupsAccess"
+            },
+            {
+              "Action": [
+                "s3:ListBucketByTags",
+                "s3:ListBucketVersions",
+                "s3:ListBucket",
+                "s3:ListObjects",
+                "s3:GetObjectTagging",
+                "s3:HeadBucket",
+                "s3:GetObject",
+                "s3:GetBucketLocation",
+                "s3:GetObjectVersion"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [
+                      "arn:",
+                      { "Ref": "AWS::Partition" },
+                      ":s3:::",
+                      { "Ref": "PluginsBucket" },
+                      ""
+                ]]},
+                { "Fn::Join": [ "", [
+                      "arn:",
+                      { "Ref": "AWS::Partition" },
+                      ":s3:::",
+                      { "Ref": "PluginsBucket" },
+                      "/*"
+                ]]}
+              ],
+              "Sid": "SoftwareAccess"
             },
             {
               "Action": [
