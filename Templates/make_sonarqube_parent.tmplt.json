@@ -347,8 +347,13 @@
       "Description": "Name of preferred pip RPM.",
       "Type": "String"
     },
-    "PluginS3Location": {
-      "AllowedPattern": "^$|^s3://.*$",
+    "PluginsBucket":{
+      "AllowedPattern": "^[a-z0-9].*$",
+      "Description": "S3 bucket hosting Sonarqube installation's feature-extending plugins.",
+      "Type": "String"
+    },
+    "PluginFolder": {
+      "AllowedPattern": "^$|^[A-Za-z0-9].*$",
       "Description": "S3-path containing Sonarqube plugins.",
       "Type": "String"
     },
@@ -512,7 +517,17 @@
           "NoReboot": { "Ref": "NoReboot" },
           "PipIndexFips": { "Ref": "PipIndexFips" },
           "PipRpm": { "Ref": "PipRpm" },
-          "PluginS3Location": { "Ref": "PluginS3Location" },
+          "PluginS3Location": {
+            "Fn::Join": [
+              "",
+              [
+                "s3://",
+                { "Ref": "PluginsBucket" },
+                "/",
+                { "Ref": "PluginFolder" }
+              ]
+            ]
+          },
           "ProvisionUser": { "Ref": "ProvisionUser" },
           "PyStache": { "Ref": "PyStache" },
           "SecurityGroupIds": {
@@ -583,6 +598,7 @@
           "BackupBucketArn": {
             "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketArn" ]
           },
+          "PluginsBucket": { "Ref": "PluginsBucket" },
           "RolePrefix": { "Ref": "RolePrefix" },
           "ServiceTld": { "Ref": "ServiceTld" }
         },
