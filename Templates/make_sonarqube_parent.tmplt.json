@@ -143,15 +143,23 @@
         "db.t2.small",
         "db.t2.medium",
         "db.t2.large",
-        "db.m3.medium",
-        "db.m3.large",
-        "db.m3.xlarge",
-        "db.m3.2xlarge",
+        "db.t2.xlarge",
+        "db.t2.2xlarge",
         "db.m4.large",
         "db.m4.xlarge",
         "db.m4.2xlarge",
         "db.m4.4xlarge",
         "db.m4.10xlarge",
+        "db.m3.medium",
+        "db.m3.large",
+        "db.m3.xlarge",
+        "db.m3.2xlarge",
+        "db.m3.4xlarge",
+        "db.r4.large",
+        "db.r4.xlarge",
+        "db.r4.2xlarge",
+        "db.r4.4xlarge",
+        "db.r4.8xlarge",
         "db.r3.large",
         "db.r3.xlarge",
         "db.r3.2xlarge",
@@ -164,6 +172,12 @@
     },
     "DbNodeName": {
       "Description": "NodeName of the SonarQube database.",
+      "Type": "String"
+    },
+    "DbSnapshotId": {
+      "AllowedPattern": "^$|^arn:.*$",
+      "Default": "",
+      "Description": "(Optional) RDS snapshot-ARN to clone new database from.",
       "Type": "String"
     },
     "Domainname": {
@@ -324,9 +338,13 @@
     },
     "PgsqlVersion": {
       "AllowedValues": [
+        "9.6.6",
+        "9.6.5",
         "9.6.3",
         "9.6.2",
         "9.6.1",
+        "9.5.10",
+        "9.5.9",
         "9.5.7",
         "9.5.6",
         "9.5.4",
@@ -618,6 +636,7 @@
           "DbIsMultiAz": "true",
           "DbNodeName": { "Ref": "DbNodeName" },
           "DbSecurityGroup": { "Fn::GetAtt": [ "SgRes", "Outputs.RdsSg" ] },
+          "DbSnapshotId": { "Ref": "DbSnapshotId" },
           "DbSubnets": {
             "Fn::Join": [
               ",",
