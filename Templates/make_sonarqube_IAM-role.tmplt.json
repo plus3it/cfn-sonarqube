@@ -1,0 +1,233 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": {
+    "PrettyRole": {
+      "Fn::Not": [ { "Fn::Equals": [ { "Ref": "RolePrefix" }, "" ] } ]
+    }
+  },
+  "Description": "This template sets up the IAM role needed by an Sonarqube instance",
+  "Outputs": {
+    "InstanceRole": {
+      "Description": "Name of the instance role",
+      "Value": { "Ref": "InstanceRole" }
+    },
+    "InstanceRoleArn": {
+      "Description": "ARN of the instance role",
+      "Value": { "Fn::GetAtt": [ "InstanceRole", "Arn" ] }
+    },
+    "InstanceProfile": {
+      "Description": "Profile of the instance role",
+      "Value": { "Ref": "InstanceProfile" }
+    }
+  },
+  "Parameters": {
+    "BackupBucketArn": {
+      "Description": "S3 Bucket to host Sonarqube backup-data.",
+      "Type": "String"
+    },
+    "PluginsBucket": {
+      "Description": "S3 Bucket hosting Sonarqube plugins.",
+      "Type": "String"
+    },
+    "RolePrefix": {
+      "Description": "Prefix to apply to IAM role to make things a bit prettier (optional).",
+      "Type": "String"
+    },
+    "ServiceTld": {
+      "Default": "amazonaws.com",
+      "Description": "TLD of the IAM service-trust.",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "InstancePolicy": {
+      "Properties": {
+        "Description": "Policy to provide instance-level access to needed AWS-level resources",
+        "Path": "/",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [
+                      { "Ref": "BackupBucketArn" },
+                      ""
+                ]]},
+                { "Fn::Join": [ "", [
+                      { "Ref": "BackupBucketArn" },
+                      "/*"
+                ]]}
+              ],
+              "Sid": "BackupsAccess"
+            },
+            {
+              "Action": [
+                "s3:ListBucketByTags",
+                "s3:ListBucketVersions",
+                "s3:ListBucket",
+                "s3:ListObjects",
+                "s3:GetObjectTagging",
+                "s3:HeadBucket",
+                "s3:GetObject",
+                "s3:GetBucketLocation",
+                "s3:GetObjectVersion"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [
+                      "arn:",
+                      { "Ref": "AWS::Partition" },
+                      ":s3:::",
+                      { "Ref": "PluginsBucket" }
+                ]]},
+                { "Fn::Join": [ "", [
+                      "arn:",
+                      { "Ref": "AWS::Partition" },
+                      ":s3:::",
+                      { "Ref": "PluginsBucket" },
+                      "/*"
+                ]]}
+              ],
+              "Sid": "SoftwareAccess"
+            },
+            {
+              "Action": [
+                "cloudformation:DescribeStackResource",
+                "cloudformation:SignalResource"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ],
+              "Sid": "ASGsupport"
+            },
+            {
+              "Action": [
+                "cloudwatch:PutMetricData",
+                "ds:CreateComputer",
+                "ds:DescribeDirectories",
+                "ec2:DescribeInstanceStatus",
+                "ec2messages:AcknowledgeMessage",
+                "ec2messages:DeleteMessage",
+                "ec2messages:FailMessage",
+                "ec2messages:GetEndpoint",
+                "ec2messages:GetMessages",
+                "ec2messages:SendReply",
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+                "ssm:DescribeAssociation",
+                "ssm:GetDeployablePatchSnapshotForInstance",
+                "ssm:GetDocument",
+                "ssm:GetParameters",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListAssociations",
+                "ssm:PutInventory",
+                "ssm:UpdateAssociationStatus",
+                "ssm:UpdateInstanceAssociationStatus",
+                "ssm:UpdateInstanceInformation"
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+              "Sid": "MiscEnablement"
+            },
+            {
+              "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucketMultipartUploads",
+                "s3:AbortMultipartUpload",
+                "s3:ListMultipartUploadParts"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    { "Ref": "AWS::Partition" },
+                    ":s3:::ssm-",
+                    { "Ref": "AWS::AccountId" },
+                    "/*"
+                  ]
+                ]
+              },
+              "Sid": "AcctSsmBucket"
+            },
+            {
+              "Action": "s3:ListBucket",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    { "Ref": "AWS::Partition" },
+                    ":s3:::amazon-ssm-packages-*"
+                  ]
+                ]
+              },
+              "Sid": "GetSsmPkgs"
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Roles": [ { "Ref": "InstanceRole" } ]
+      },
+      "Type": "AWS::IAM::ManagedPolicy"
+    },
+    "InstanceProfile": {
+      "Properties": {
+        "Path": "/",
+        "Roles": [ { "Ref": "InstanceRole" } ]
+      },
+      "Type": "AWS::IAM::InstanceProfile"
+    },
+    "InstanceRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": {
+                  "Fn::Join": [
+                    ".",
+                    [
+                      "ec2",
+                      { "Ref": "ServiceTld" }
+                    ]
+                  ]
+                }
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Path": "/",
+        "RoleName": {
+          "Fn::If": [
+            "PrettyRole",
+            {
+              "Fn::Join": [
+                "-",
+                [
+                  { "Ref": "RolePrefix" },
+                  { "Ref": "AWS::StackName" }
+                ]
+              ]
+            },
+            { "Ref": "AWS::NoValue" }
+          ]
+        }
+      },
+      "Type": "AWS::IAM::Role"
+    }
+  }
+}

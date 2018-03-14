@@ -16,7 +16,6 @@ PGSQLPASS=${SONARQUBE_DBPASS:-UNDEF}
 PGSQLHOST=${SONARQUBE_DBHOST:-UNDEF}
 PGSQLINST=${SONARQUBE_DBINST:-UNDEF}
 SONARHOME="$(getent passwd $SONAR_USER | cut -d: -f 6)"
-SQBURL="${SONARQUBE_ZIP:-UNDEF}"
 
 # Define an error-handler
 function err_exit {
@@ -24,11 +23,6 @@ function err_exit {
    exit 1
 }
 
-# Ensure URL to ZIP file has been passed
-if [[ ${SQBURL} = UNDEF ]]
-then
-   err_exit 'Failed to pass URL for Sonarqube archive to script.'
-fi
 
 # Ensure env vars have been passed
 if [[ ${PGSQLUSER} = UNDEF ]] ||
@@ -43,37 +37,20 @@ fi
 # shellcheck disable=SC2046
 cd "${SONARHOME}" || err_exit "Change-dir failed."
 
-# Fetch sonarqube ZIP-bundle
-printf "Fetching %s..." "${SQBURL}"
-curl -o /tmp/sonarqube.zip -skL "${SQBURL}" && \
-   echo "Success." || \
-   err_exit 'Failed to fetch Sonarqube ZIP.'
+# Install Sonarqube binaries
+printf "Attempting to install %s rpm... " "${SONARQUBE_RPM}"
+yum install -qy "${SONARQUBE_RPM}" && echo "Success" ||
+  err_exit "Installation of ${SONARQUBE_RPM} rpm failed"
 
 # Set more vars..
-SQBROOT=$(unzip -qql /tmp/sonarqube.zip | head -n1 | 
-          tr -s ' ' | cut -d' ' -f5-)
-SQBPROP=sonarqube/conf/sonar.properties
+SQBPROP="$(rpm -ql ${SONARQUBE_RPM} | grep sonar.properties)"
+SQBPLUGD="$(rpm -ql ${SONARQUBE_RPM} | grep extensions/plugins$)"
 
-# De-archive Sonarqube ZIP-bundle
-if [[ ! -d ${SONARHOME}/sonarqube ]]
-then
-   printf "Unzipping Sonarqube... "
-   unzip -qq /tmp/sonarqube.zip && echo "Success." || \
-      err_exit 'Failed to de-archive Sonarqube ZIP.'
-
-   # Pull down plugins
-   if [[ ! -z ${SONARQUBE_PLUGIN_LOC+xxx} ]]
-   then
-      echo "Pulling down plugins..."
-      aws s3 sync --delete ${SONARQUBE_PLUGIN_LOC} \
-        ${SQBROOT}/extensions/plugins && \
-          printf "\nDone downloading plugins!\n"
-   fi
-
-   printf "Renaming dir..."
-   mv "${SQBROOT}" sonarqube && echo "Success." || \
-      err_exit 'Failed to rename dir.'
-fi
+# Pull down extra plugins
+echo "Pulling down plugins..."
+aws s3 sync --delete ${SONARQUBE_PLUGIN_LOC} "${SQBPLUGD}" && 
+ printf "\nDone downloading plugins!\n" ||
+ printf "\nOne or more errores experienced during plugin-download\n"
 
 # Create null Sonar properties file with proper SEL contexts
 # ...saving off "DIST" file if appropriate
@@ -100,12 +77,8 @@ ldap.realm=${SONARQUBE_LDAP_REALM}
 ldap.StartTLS=${SONARQUBE_LDAP_USETLS}
 ldap.bindDn=${SONARQUBE_LDAP_BINDDN}
 ldap.bindPassword=${SONARQUBE_LDAP_BINDPASS}
-# ldap.followReferrals=true
 ldap.user.baseDn=${SONARQUBE_LDAP_BASEDN_USERS}
-# ldap.group.baseDn=${SONARQUBE_LDAP_BASEDN_GROUPS}
 ldap.user.request=${SONARQUBE_LDAP_QUERYSTRING}
-# ldap.group.request=(&(objectClass=group)(member={dn}))
-# ldap.group.idAttribute=sAMAccountName
 EOF
 
 # shellcheck disable=SC2181
@@ -117,6 +90,4 @@ else
    err_exit 'Failed to update parms in ${SQBPROP}'
 fi
 
-printf "Setting ownership to %s... " "$SONAR_USER"
-chown -R "$SONAR_USER":"$SONAR_USER" "${SONARHOME}" && echo "Success" || \
-  err_exit "Change-ownership operation experienced failures"
+

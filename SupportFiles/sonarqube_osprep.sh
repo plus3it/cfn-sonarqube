@@ -13,7 +13,7 @@ do
   export "${ENV}"
 done < /etc/cfn/Sonarqube.envs
 # shellcheck disable=SC2153,SC2034
-SONARUSER="${SONAR_USER}"
+SONARYUMDEF="${SONARQUBE_YUM_REPO_URL}"
 RPMDEPLST=(
       postgresql
       postgresql-jdbc
@@ -38,6 +38,49 @@ function err_exit {
    else
       exit 1
    fi
+}
+
+
+##
+## Install Sonarqube yum definition
+function SqRepoSetup {
+
+   SAVPWD="${PWD}"
+
+   echo "Installing yum repo-definition for sonarqube RPM..."
+
+   cd /etc/cfn/files || err_exit "The chdir operation failed"
+
+   printf "Downloading sonarqube's repo-def... "
+   # Choose download method based on URL
+   if [[ $( echo ${SONARYUMDEF} | grep -q s3:// )$? -eq 0 ]]
+   then
+      aws s3 cp ${SONARYUMDEF} . && echo "Succeeded" ||
+       err_exit "Failed to download ${SONARYUMDEF}"
+   elif [[ $( echo ${SONARYUMDEF} | grep -qE "http://|https://" )$? -eq 0 ]]
+   then
+      curl -OskL ${SONARYUMDEF} && echo "Succeeded" ||
+       err_exit "Failed to download ${SONARYUMDEF}"
+   else
+      err_exit "Unable to identify dowload method for ${SONARYUMDEF}"
+   fi
+
+   # Choose install method based on file-type
+   if [[ $( file "${SONARYUMDEF//*\/}" | grep -q ' RPM ' )$? -eq 0 ]]
+   then
+      printf "Using yum to install repo-def... "
+      yum install -q -y "${SONARYUMDEF//*\/}" && echo "Success" ||
+        err_exit "Failed to install sonarqube's repo-def"
+   elif [[ $( file "${SONARYUMDEF//*\/}" | grep -q ' ASCII ' )$? -eq 0 ]]
+   then
+      printf "Copying repo-def to system-location... "
+      cp "${SONARYUMDEF//*\/}" /etc/yum.repos.d  && echo "Success" ||
+        err_exit "Failed to install sonarqube's repo-def"
+   else
+      err_exit "Failed to identify install-type for ${SONARYUMDEF//*\/}"
+   fi
+
+   cd "${SAVPWD}" || echo "INFO: The chdir back to ${SAVPWD} failed"
 }
 
 
@@ -119,4 +162,4 @@ function FwSetup {
 # Call setup functions
 FwSetup
 InstMissingRPM
-
+SqRepoSetup
