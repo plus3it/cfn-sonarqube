@@ -4,7 +4,7 @@ The Sonarqube project is a sub-project of the overarching DevOps Tool-Chain (DOT
 
 * [Security Groups](docs/SG-Template.md)
 * Simple Storage Service [(S3) Bucket](docs/S3-Template.md)
-* [Relational Databas Service](docs/RDS-Template.md) (RDS)
+* [Relational Database Service](docs/RDS-Template.md) (RDS)
 * Identity and Access Management [(IAM) role](docs/IAM-Template.md)
 * Application LoadBalancer (a.k.a., ["ELBv2"](docs/ELBv2-Template.md))
 * [Standalone](docs/EC2-standalone-Template.md)  EC2 instance
