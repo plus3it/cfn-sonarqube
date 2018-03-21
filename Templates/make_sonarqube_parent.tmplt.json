@@ -426,6 +426,13 @@
       "Description": "URI for the template that creates SonarQube's RDS database.",
       "Type": "String"
     },
+    "ReportingBucket": {
+      "AllowedPattern": "^arn:.*$|^$",
+      "ConstraintDescription": "String must start with 'arn:' (or be left wholly blank).",
+      "Default": "",
+      "Description": "(Optional) Destination for storing analytics data. Must be provided in ARN format.",
+      "Type": "String"
+    },
     "RetainIncompleteDays": {
       "ConstraintDescription": "Must be an integer value between '0' and '30'",
       "Default": "3",
@@ -536,6 +543,7 @@
       "Properties": {
         "Parameters": {
           "FinalExpirationDays": { "Ref": "FinalExpirationDays" },
+          "ReportingBucket": { "Ref": "ReportingBucket" },
           "RetainIncompleteDays": { "Ref": "RetainIncompleteDays" },
           "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" },
           "TierToS3Days": { "Ref": "TierToS3Days" }

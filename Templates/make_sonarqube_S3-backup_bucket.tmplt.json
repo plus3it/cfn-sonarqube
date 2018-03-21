@@ -5,6 +5,11 @@
       "Fn::Not": [
         { "Fn::Equals": [ { "Ref": "SonarqubeBackupBucket" }, "" ] }
       ]
+    },
+    "UseReportingLocation": {
+      "Fn::Not": [
+        { "Fn::Equals": [ { "Ref": "ReportingBucket" }, "" ] }
+      ]
     }
   },
   "Description": "This template sets up the S3 Bucket used by an Sonarqube instance.",
@@ -56,6 +61,13 @@
       "Description": "Number of days to retain objects before aging them out of the bucket",
       "Type": "Number"
     },
+    "ReportingBucket": {
+      "AllowedPattern": "^arn:.*$|^$",
+      "ConstraintDescription": "String must start with 'arn:' (or be left wholly blank).",
+      "Default": "",
+      "Description": "(Optional) Destination for storing analytics data. Must be provided in ARN format.",
+      "Type": "String"
+    },
     "RetainIncompleteDays": {
       "ConstraintDescription": "Must be an integer value between '0' and '30'",
       "Default": "3",
@@ -82,6 +94,28 @@
     "SonarqubeS3Bucket": {
       "Properties": {
         "AccessControl": "BucketOwnerFullControl",
+        "AnalyticsConfigurations": [
+          {
+            "Id": "Archivable",
+            "Prefix": "Backups/",
+            "StorageClassAnalysis": {
+              "DataExport": {
+                "Fn::If": [
+                  "UseReportingLocation",
+                  {
+                    "Destination": {
+                      "BucketArn": { "Ref": "ReportingBucket" },
+                      "Format": "CSV",
+                      "Prefix": "StorageReporting/Analytics"
+                    },
+                    "OutputSchemaVersion": "V_1"
+                  },
+                  { "Ref": "AWS::NoValue" }
+                ]
+              }
+            }
+          }
+        ],
         "BucketName": {
           "Fn::If": [
             "SetBucketName",
