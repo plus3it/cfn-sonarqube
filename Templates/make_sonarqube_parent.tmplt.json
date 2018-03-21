@@ -133,6 +133,15 @@
       "MinValue": "60",
       "Type": "Number"
     },
+    "BucketInventoryTracking": {
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "(Optional) Whether to enable generic bucket inventory-tracking. Requires setting of the 'ReportingBucket' parameter.",
+      "Type": "String"
+    },
     "BucketTemplate": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URI for the template that creates SonarQube's S3 bucket(s).",
@@ -542,6 +551,7 @@
     "BackupBucketRes": {
       "Properties": {
         "Parameters": {
+          "BucketInventoryTracking": { "Ref": "BucketInventoryTracking" },
           "FinalExpirationDays": { "Ref": "FinalExpirationDays" },
           "ReportingBucket": { "Ref": "ReportingBucket" },
           "RetainIncompleteDays": { "Ref": "RetainIncompleteDays" },

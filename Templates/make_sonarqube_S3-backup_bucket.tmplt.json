@@ -6,6 +6,9 @@
         { "Fn::Equals": [ { "Ref": "SonarqubeBackupBucket" }, "" ] }
       ]
     },
+    "UseBucketInventoryTracking": {
+      "Fn::Equals": [ { "Ref": "BucketInventoryTracking" }, "true" ]
+    },
     "UseReportingLocation": {
       "Fn::Not": [
         { "Fn::Equals": [ { "Ref": "ReportingBucket" }, "" ] }
@@ -55,6 +58,15 @@
     }
   },
   "Parameters": {
+    "BucketInventoryTracking": {
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "(Optional) Whether to enable generic bucket inventory-tracking. Requires setting of the 'ReportingBucket' parameter.",
+      "Type": "String"
+    },
     "FinalExpirationDays": {
       "ConstraintDescription": "Must be an integer value greater than '0'.",
       "Default": "30",
@@ -123,6 +135,26 @@
             { "Ref": "AWS::NoValue" }
           ]
         },
+        "InventoryConfigurations": [
+          {
+            "Fn::If": [
+              "UseBucketInventoryTracking",
+              {
+                "Id": "BackupsInventory",
+                "Destination": {
+                  "BucketArn": { "Ref": "ReportingBucket" },
+                  "Format": "CSV",
+                  "Prefix": "StorageReporting/Inventory"
+                },
+                "Enabled": "true",
+                "IncludedObjectVersions": "Current",
+                "Prefix": "Backups/",
+                "ScheduleFrequency": "Weekly"
+              },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
+        ],
         "LifecycleConfiguration": {
           "Rules": [
             {
