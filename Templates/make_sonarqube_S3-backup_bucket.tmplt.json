@@ -3,43 +3,41 @@
   "Conditions": {
     "SetBucketName": {
       "Fn::Not": [
-        {
-        "Fn::Equals": [ { "Ref": "SonarqubeBackupBucket" }, "" ]
-        }
+        { "Fn::Equals": [ { "Ref": "SonarqubeBackupBucket" }, "" ] }
       ]
     }
   },
   "Description": "This template sets up the S3 Bucket used by an Sonarqube instance.",
+  "Outputs": {
+    "SonarqubeBucketArn": {
+      "Description": "Sonarqube S3 Bucket ARN.",
+      "Value": { "Fn::GetAtt": [ "SonarqubeS3Bucket", "Arn" ] }
+    },
+    "SonarqubeBucketName": {
+      "Description": "Sonarqube S3 Bucket Name.",
+      "Value": { "Ref": "SonarqubeS3Bucket" }
+    }
+  },
   "Parameters": {
     "SonarqubeBackupBucket": {
+      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$",
       "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
-      "Type": "String",
-      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$"
+      "Type": "String"
     }
   },
   "Resources": {
     "SonarqubeS3Bucket": {
-      "Type": "AWS::S3::Bucket",
       "Properties": {
         "AccessControl": "BucketOwnerFullControl",
         "BucketName": {
           "Fn::If": [
             "SetBucketName",
-            { "Ref" : "SonarqubeBackupBucket" },
-            { "Ref" : "AWS::NoValue" }
+            { "Ref": "SonarqubeBackupBucket" },
+            { "Ref": "AWS::NoValue" }
           ]
         }
-      }
-    }
-  },
-  "Outputs": {
-    "SonarqubeBucketName": {
-      "Value": { "Ref": "SonarqubeS3Bucket" },
-      "Description": "Sonarqube S3 Bucket Name."
-    },
-    "SonarqubeBucketArn": {
-      "Value": { "Fn::GetAtt": [ "SonarqubeS3Bucket", "Arn" ] },
-      "Description": "Sonarqube S3 Bucket ARN."
+      },
+      "Type": "AWS::S3::Bucket"
     }
   }
 }
