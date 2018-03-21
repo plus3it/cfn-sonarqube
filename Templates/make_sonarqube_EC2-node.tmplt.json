@@ -414,6 +414,7 @@
                       "Type=forking\n",
                       "Restart=always\n",
                       "RestartSec=30\n",
+                      "LimitNOFILE=65536\n",
                       "\n",
                       "[Install]\n",
                       "WantedBy=multi-user.target\n"
