@@ -43,8 +43,18 @@
             "SonarUser",
             "SonarOsPrepUrl",
             "SonarAppSetupUrl",
-            "SonarInitSetupUrl",
-            "SonarqubeBackupBucket"
+            "SonarInitSetupUrl"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Bucket Options"
+          },
+          "Parameters": [
+            "SonarqubeBackupBucket",
+            "TierToS3Days",
+            "RetainIncompleteDays",
+            "FinalExpirationDays"
           ]
         },
         {
@@ -88,7 +98,21 @@
             "PipIndexFips"
           ]
         }
-      ]
+      ],
+      "ParameterLabels": {
+        "FinalExpirationDays": {
+          "default": "Maximum Retention"
+        },
+        "RetainIncompleteDays": {
+          "default": "Cleanup Incompletes"
+        },
+        "SonarqubeBackupBucket": {
+          "default": "Name for Backup Bucket"
+        },
+        "TierToS3Days": {
+          "default": "Tier to Glacier"
+        }
+      }
     }
   },
   "Parameters": {
@@ -210,6 +234,12 @@
       "Default": "epel",
       "Description": "Name of network's EPEL repo.",
       "Type": "String"
+    },
+    "FinalExpirationDays": {
+      "ConstraintDescription": "Must be an integer value greater than '0'.",
+      "Default": "30",
+      "Description": "Number of days to retain objects before aging them out of the bucket",
+      "Type": "Number"
     },
     "HaSubnets": {
       "Description": "Select three subnets - each from different Availability Zones.",
@@ -396,6 +426,14 @@
       "Description": "URI for the template that creates SonarQube's RDS database.",
       "Type": "String"
     },
+    "RetainIncompleteDays": {
+      "ConstraintDescription": "Must be an integer value between '0' and '30'",
+      "Default": "3",
+      "Description": "Number of days to retain objects that were not completely uploaded.",
+      "MaxValue": "30",
+      "MinValue": "0",
+      "Type": "Number"
+    },
     "RolePrefix": {
       "Description": "Prefix to apply to IAM role to make things a bit prettier (optional).",
       "Type": "String"
@@ -467,6 +505,14 @@
       "Description": "ID of the VPC to deploy cluster nodes into.",
       "Type": "AWS::EC2::VPC::Id"
     },
+    "TierToS3Days": {
+      "ConstraintDescription": "Must be an integer value between '1' and '30'",
+      "Default": "5",
+      "Description": "Number of days to retain objects in standard storage tier.",
+      "MaxValue": "30",
+      "MinValue": "1",
+      "Type": "Number"
+    },
     "WatchmakerConfig": {
       "AllowedPattern": "^$|^http[s]?://.*$",
       "Default": "",
@@ -489,7 +535,10 @@
     "BackupBucketRes": {
       "Properties": {
         "Parameters": {
-          "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" }
+          "FinalExpirationDays": { "Ref": "FinalExpirationDays" },
+          "RetainIncompleteDays": { "Ref": "RetainIncompleteDays" },
+          "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" },
+          "TierToS3Days": { "Ref": "TierToS3Days" }
         },
         "TemplateURL": { "Ref": "BucketTemplate" },
         "TimeoutInMinutes": "10"

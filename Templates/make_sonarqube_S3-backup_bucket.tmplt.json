@@ -8,6 +8,37 @@
     }
   },
   "Description": "This template sets up the S3 Bucket used by an Sonarqube instance.",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Bucket Options"
+          },
+          "Parameters": [
+            "SonarqubeBackupBucket",
+            "TierToS3Days",
+            "RetainIncompleteDays",
+            "FinalExpirationDays"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "FinalExpirationDays": {
+          "default": "Maximum Retention"
+        },
+        "RetainIncompleteDays": {
+          "default": "Cleanup Incompletes"
+        },
+        "SonarqubeBackupBucket": {
+          "default": "Name for Backup Bucket"
+        },
+        "TierToS3Days": {
+          "default": "Tier to Glacier"
+        }
+      }
+    }
+  },
   "Outputs": {
     "SonarqubeBucketArn": {
       "Description": "Sonarqube S3 Bucket ARN.",
@@ -19,10 +50,32 @@
     }
   },
   "Parameters": {
+    "FinalExpirationDays": {
+      "ConstraintDescription": "Must be an integer value greater than '0'.",
+      "Default": "30",
+      "Description": "Number of days to retain objects before aging them out of the bucket",
+      "Type": "Number"
+    },
+    "RetainIncompleteDays": {
+      "ConstraintDescription": "Must be an integer value between '0' and '30'",
+      "Default": "3",
+      "Description": "Number of days to retain objects that were not completely uploaded.",
+      "MaxValue": "30",
+      "MinValue": "0",
+      "Type": "Number"
+    },
     "SonarqubeBackupBucket": {
       "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$",
-      "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
+      "Description": "(Optional parameter) S3 Bucket to host Sonarqube content.",
       "Type": "String"
+    },
+    "TierToS3Days": {
+      "ConstraintDescription": "Must be an integer value between '1' and '30'",
+      "Default": "5",
+      "Description": "Number of days to retain objects in standard storage tier.",
+      "MaxValue": "30",
+      "MinValue": "1",
+      "Type": "Number"
     }
   },
   "Resources": {
@@ -34,6 +87,25 @@
             "SetBucketName",
             { "Ref": "SonarqubeBackupBucket" },
             { "Ref": "AWS::NoValue" }
+          ]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "AbortIncompleteMultipartUpload": {
+                "DaysAfterInitiation": { "Ref": "RetainIncompleteDays" }
+              },
+              "ExpirationInDays": { "Ref": "FinalExpirationDays" },
+              "Id": "BackupTiering",
+              "Prefix": "Backups/",
+              "Status": "Enabled",
+              "Transitions": [
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": { "Ref": "TierToS3Days" }
+                }
+              ]
+            }
           ]
         }
       },
