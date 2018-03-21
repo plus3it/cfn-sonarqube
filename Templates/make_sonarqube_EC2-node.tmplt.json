@@ -392,6 +392,19 @@
                 "owner": "root",
                 "source": { "Ref": "SonarqubeAppPrepUrl" }
               },
+              "/etc/sysctl.d/sonarqube.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "vm.max_map_count = 262144\n"
+                    ]
+                  ]
+                },
+                "group": "root",
+                "mode": "000600",
+                "owner": "root"
+              },
               "/etc/systemd/system/sonar.service": {
                 "content": {
                   "Fn::Join": [
@@ -422,7 +435,7 @@
                   ]
                 },
                 "group": "root",
-                "mode": "000700",
+                "mode": "000600",
                 "owner": "root"
               }
             }
