@@ -28,22 +28,44 @@
             "AmiId",
             "InstanceType",
             "SubnetId",
-            "NoPublicIp",
             "ProvisionUser",
             "KeyPairName",
             "AdminPubkeyURL",
-            "NoReboot"
+            "WatchmakerEnvironment",
+            "WatchmakerConfig",
+            "EpelRepo",
+            "PipRpm",
+            "PyStache",
+            "PipIndexFips"
           ]
         },
         {
           "Label": {
-            "default": "Application Info"
+            "default": "Application Config Info"
           },
           "Parameters": [
-            "SonarUser",
             "SonarOsPrepUrl",
             "SonarAppSetupUrl",
-            "SonarInitSetupUrl"
+            "SonarqubeYumRepo",
+            "SonarqubeRpmName",
+            "PluginsBucket",
+            "PluginFolder"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Application Authentication"
+          },
+          "Parameters": [
+            "LdapRealm",
+            "LdapUrl",
+            "LdapAuthType",
+            "LdapUseStartTLS",
+            "LdapBindDn",
+            "LdapBindPassword",
+            "LdapUserQuery",
+            "LdapBaseDnGroups",
+            "LdapBaseDnUsers"
           ]
         },
         {
@@ -52,9 +74,9 @@
           },
           "Parameters": [
             "SonarqubeBackupBucket",
-            "TierToS3Days",
-            "RetainIncompleteDays",
-            "FinalExpirationDays"
+            "FinalExpirationDays",
+            "ReportingBucket",
+            "BucketInventoryTracking"
           ]
         },
         {
@@ -63,9 +85,10 @@
           },
           "Parameters": [
             "PgsqlVersion",
-            "DbInstanceName",
             "DbInstanceType",
             "DbDataSize",
+            "DbSnapshotId",
+            "DbInstanceName",
             "DbNodeName",
             "DbAdminName",
             "DbAdminPass"
@@ -91,11 +114,7 @@
             "ServiceTld",
             "TargetVPC",
             "RolePrefix",
-            "HaSubnets",
-            "EpelRepo",
-            "PipRpm",
-            "PyStache",
-            "PipIndexFips"
+            "HaSubnets"
           ]
         }
       ],
@@ -357,24 +376,6 @@
       "Description": "Search-expression used to find users in directory",
       "Type": "String"
     },
-    "NoPublicIp": {
-      "AllowedValues": [
-        "false",
-        "true"
-      ],
-      "Default": "true",
-      "Description": "Controls whether to assign the instance a public IP. Recommended to leave at \"true\" _unless_ launching in a public subnet",
-      "Type": "String"
-    },
-    "NoReboot": {
-      "AllowedValues": [
-        "false",
-        "true"
-      ],
-      "Default": "false",
-      "Description": "Controls whether to reboot the instance as the last step of cfn-init execution",
-      "Type": "String"
-    },
     "PgsqlVersion": {
       "AllowedValues": [
         "9.6.6",
@@ -442,14 +443,6 @@
       "Description": "(Optional) Destination for storing analytics data. Must be provided in ARN format.",
       "Type": "String"
     },
-    "RetainIncompleteDays": {
-      "ConstraintDescription": "Must be an integer value between '0' and '30'",
-      "Default": "3",
-      "Description": "Number of days to retain objects that were not completely uploaded.",
-      "MaxValue": "30",
-      "MinValue": "0",
-      "Type": "Number"
-    },
     "RolePrefix": {
       "Description": "Prefix to apply to IAM role to make things a bit prettier (optional).",
       "Type": "String"
@@ -469,11 +462,6 @@
       "Description": "URL of the Sonarqube setup script.",
       "Type": "String"
     },
-    "SonarInitSetupUrl": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URL of the Sonarqube service setup script.",
-      "Type": "String"
-    },
     "SonarOsPrepUrl": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URL of the script ready the OS for Sonarqube installation.",
@@ -484,11 +472,6 @@
       "Description": "Name of Sonarqube RPM to install. Include release version if 'other-than-latest' is desired. Example values would be: sonar, sonar-X.Y or sonar-X.Y.Z",
       "Type": "String",
       "AllowedPattern": "^sonar$|^sonar-.*$"
-    },
-    "SonarUser": {
-      "Default": "sonarqube",
-      "Description": "Userid the Sonarqube service runs under.",
-      "Type": "String"
     },
     "SonarqubeBackupBucket": {
       "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$",
@@ -521,14 +504,6 @@
       "Description": "ID of the VPC to deploy cluster nodes into.",
       "Type": "AWS::EC2::VPC::Id"
     },
-    "TierToS3Days": {
-      "ConstraintDescription": "Must be an integer value between '1' and '30'",
-      "Default": "5",
-      "Description": "Number of days to retain objects in standard storage tier.",
-      "MaxValue": "30",
-      "MinValue": "1",
-      "Type": "Number"
-    },
     "WatchmakerConfig": {
       "AllowedPattern": "^$|^http[s]?://.*$",
       "Default": "",
@@ -554,9 +529,9 @@
           "BucketInventoryTracking": { "Ref": "BucketInventoryTracking" },
           "FinalExpirationDays": { "Ref": "FinalExpirationDays" },
           "ReportingBucket": { "Ref": "ReportingBucket" },
-          "RetainIncompleteDays": { "Ref": "RetainIncompleteDays" },
+          "RetainIncompleteDays": "3",
           "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" },
-          "TierToS3Days": { "Ref": "TierToS3Days" }
+          "TierToS3Days": "7"
         },
         "TemplateURL": { "Ref": "BucketTemplate" },
         "TimeoutInMinutes": "10"
@@ -598,8 +573,8 @@
           "LdapUrl": { "Ref": "LdapUrl" },
           "LdapUseStartTLS": { "Ref": "LdapUseStartTLS" },
           "LdapUserQuery": { "Ref": "LdapUserQuery" },
-          "NoPublicIp": { "Ref": "NoPublicIp" },
-          "NoReboot": { "Ref": "NoReboot" },
+          "NoPublicIp": "true",
+          "NoReboot": "false",
           "PipIndexFips": { "Ref": "PipIndexFips" },
           "PipRpm": { "Ref": "PipRpm" },
           "PluginS3Location": {
@@ -634,7 +609,7 @@
           "SonarqubeDbUser": { "Ref": "DbAdminName" },
           "SonarqubeOsPrepUrl": { "Ref": "SonarOsPrepUrl" },
           "SonarqubeRpmName": { "Ref": "SonarqubeRpmName" },
-          "SonarqubeUser": { "Ref": "SonarUser" },
+          "SonarqubeUser": "sonar",
           "SonarqubeYumRepo": { "Ref": "SonarqubeYumRepo" },
           "SubnetId": { "Ref": "SubnetId" },
           "WatchmakerConfig": { "Ref": "WatchmakerConfig" },
