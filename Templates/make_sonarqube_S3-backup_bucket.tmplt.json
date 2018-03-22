@@ -3,43 +3,179 @@
   "Conditions": {
     "SetBucketName": {
       "Fn::Not": [
-        {
-        "Fn::Equals": [ { "Ref": "SonarqubeBackupBucket" }, "" ]
-        }
+        { "Fn::Equals": [ { "Ref": "SonarqubeBackupBucket" }, "" ] }
+      ]
+    },
+    "UseBucketInventoryTracking": {
+      "Fn::Equals": [ { "Ref": "BucketInventoryTracking" }, "true" ]
+    },
+    "UseReportingLocation": {
+      "Fn::Not": [
+        { "Fn::Equals": [ { "Ref": "ReportingBucket" }, "" ] }
       ]
     }
   },
   "Description": "This template sets up the S3 Bucket used by an Sonarqube instance.",
-  "Parameters": {
-    "SonarqubeBackupBucket": {
-      "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
-      "Type": "String",
-      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$"
-    }
-  },
-  "Resources": {
-    "SonarqubeS3Bucket": {
-      "Type": "AWS::S3::Bucket",
-      "Properties": {
-        "AccessControl": "BucketOwnerFullControl",
-        "BucketName": {
-          "Fn::If": [
-            "SetBucketName",
-            { "Ref" : "SonarqubeBackupBucket" },
-            { "Ref" : "AWS::NoValue" }
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Bucket Options"
+          },
+          "Parameters": [
+            "SonarqubeBackupBucket",
+            "TierToS3Days",
+            "RetainIncompleteDays",
+            "FinalExpirationDays"
           ]
+        }
+      ],
+      "ParameterLabels": {
+        "FinalExpirationDays": {
+          "default": "Maximum Retention"
+        },
+        "RetainIncompleteDays": {
+          "default": "Cleanup Incompletes"
+        },
+        "SonarqubeBackupBucket": {
+          "default": "Name for Backup Bucket"
+        },
+        "TierToS3Days": {
+          "default": "Tier to Glacier"
         }
       }
     }
   },
   "Outputs": {
-    "SonarqubeBucketName": {
-      "Value": { "Ref": "SonarqubeS3Bucket" },
-      "Description": "Sonarqube S3 Bucket Name."
-    },
     "SonarqubeBucketArn": {
-      "Value": { "Fn::GetAtt": [ "SonarqubeS3Bucket", "Arn" ] },
-      "Description": "Sonarqube S3 Bucket ARN."
+      "Description": "Sonarqube S3 Bucket ARN.",
+      "Value": { "Fn::GetAtt": [ "SonarqubeS3Bucket", "Arn" ] }
+    },
+    "SonarqubeBucketName": {
+      "Description": "Sonarqube S3 Bucket Name.",
+      "Value": { "Ref": "SonarqubeS3Bucket" }
+    }
+  },
+  "Parameters": {
+    "BucketInventoryTracking": {
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "(Optional) Whether to enable generic bucket inventory-tracking. Requires setting of the 'ReportingBucket' parameter.",
+      "Type": "String"
+    },
+    "FinalExpirationDays": {
+      "ConstraintDescription": "Must be an integer value greater than '0'.",
+      "Default": "30",
+      "Description": "Number of days to retain objects before aging them out of the bucket",
+      "Type": "Number"
+    },
+    "ReportingBucket": {
+      "AllowedPattern": "^arn:.*$|^$",
+      "ConstraintDescription": "String must start with 'arn:' (or be left wholly blank).",
+      "Default": "",
+      "Description": "(Optional) Destination for storing analytics data. Must be provided in ARN format.",
+      "Type": "String"
+    },
+    "RetainIncompleteDays": {
+      "ConstraintDescription": "Must be an integer value between '0' and '30'",
+      "Default": "3",
+      "Description": "Number of days to retain objects that were not completely uploaded.",
+      "MaxValue": "30",
+      "MinValue": "0",
+      "Type": "Number"
+    },
+    "SonarqubeBackupBucket": {
+      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$",
+      "Description": "(Optional parameter) S3 Bucket to host Sonarqube content.",
+      "Type": "String"
+    },
+    "TierToS3Days": {
+      "ConstraintDescription": "Must be an integer value between '1' and '30'",
+      "Default": "5",
+      "Description": "Number of days to retain objects in standard storage tier.",
+      "MaxValue": "30",
+      "MinValue": "1",
+      "Type": "Number"
+    }
+  },
+  "Resources": {
+    "SonarqubeS3Bucket": {
+      "Properties": {
+        "AccessControl": "BucketOwnerFullControl",
+        "AnalyticsConfigurations": [
+          {
+            "Id": "Archivable",
+            "Prefix": "Backups/",
+            "StorageClassAnalysis": {
+              "DataExport": {
+                "Fn::If": [
+                  "UseReportingLocation",
+                  {
+                    "Destination": {
+                      "BucketArn": { "Ref": "ReportingBucket" },
+                      "Format": "CSV",
+                      "Prefix": "StorageReporting/Analytics"
+                    },
+                    "OutputSchemaVersion": "V_1"
+                  },
+                  { "Ref": "AWS::NoValue" }
+                ]
+              }
+            }
+          }
+        ],
+        "BucketName": {
+          "Fn::If": [
+            "SetBucketName",
+            { "Ref": "SonarqubeBackupBucket" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
+        "InventoryConfigurations": [
+          {
+            "Fn::If": [
+              "UseBucketInventoryTracking",
+              {
+                "Id": "BackupsInventory",
+                "Destination": {
+                  "BucketArn": { "Ref": "ReportingBucket" },
+                  "Format": "CSV",
+                  "Prefix": "StorageReporting/Inventory"
+                },
+                "Enabled": "true",
+                "IncludedObjectVersions": "Current",
+                "Prefix": "Backups/",
+                "ScheduleFrequency": "Weekly"
+              },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
+        ],
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "AbortIncompleteMultipartUpload": {
+                "DaysAfterInitiation": { "Ref": "RetainIncompleteDays" }
+              },
+              "ExpirationInDays": { "Ref": "FinalExpirationDays" },
+              "Id": "BackupTiering",
+              "Prefix": "Backups/",
+              "Status": "Enabled",
+              "Transitions": [
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": { "Ref": "TierToS3Days" }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "Type": "AWS::S3::Bucket"
     }
   }
 }

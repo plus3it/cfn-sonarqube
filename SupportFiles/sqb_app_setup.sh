@@ -71,6 +71,7 @@ cat << EOF > "${SQBPROP}"
 sonar.jdbc.username=${PGSQLUSER}
 sonar.jdbc.password=${PGSQLPASS}
 sonar.jdbc.url=jdbc:postgresql://${PGSQLHOST}/${PGSQLINST}
+sonar.search.javaAdditionalOpts=-Djava.io.tmpdir=/var/tmp/elasticsearch
 sonar.security.realm=LDAP
 ldap.url=${SONARQUBE_LDAP_URL}
 ldap.realm=${SONARQUBE_LDAP_REALM}
