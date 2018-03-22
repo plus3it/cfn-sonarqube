@@ -3,214 +3,47 @@
   "Conditions": {
     "AssignInstanceRole": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "InstanceRole"
-            },
-            ""
-          ]
-        }
+        { "Fn::Equals": [ { "Ref": "InstanceRoleName" }, "" ] }
       ]
     },
-    "AssignPublicIp": {
+    "HasPluginPath": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "NoPublicIp"
-            },
-            "true"
-          ]
-        }
-      ]
-    },
-    "CreateAppVolume": {
-      "Fn::Equals": [
-        {
-          "Ref": "AppVolumeDevice"
-        },
-        "true"
-      ]
-    },
-    "ExecuteAppScript": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "AppScriptUrl"
-            },
-            ""
-          ]
-        }
+        { "Fn::Equals": [ { "Ref": "PluginS3Location" }, "" ] }
       ]
     },
     "InstallUpdates": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "NoUpdates"
-            },
-            "true"
-          ]
-        }
+        { "Fn::Equals": [ { "Ref": "NoUpdates" }, "true" ] }
       ]
     },
     "Reboot": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "NoReboot"
-            },
-            "true"
-          ]
-        }
+        { "Fn::Equals": [ { "Ref": "NoReboot" }, "true" ] }
       ]
     },
-    "SupportsNvme": {
-      "Fn::Equals": [
-        {
-          "Fn::FindInMap": [
-            "InstanceTypeMap",
-            {
-              "Ref": "InstanceType"
-            },
-            "SupportsNvme"
-          ]
-        },
-        "true"
-      ]
-    },
-    "UseAdminGroups": {
+    "UseCfnAppInstaller": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "WatchmakerAdminGroups"
-            },
-            ""
-          ]
-        }
-      ]
-    },
-    "UseAdminUsers": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "WatchmakerAdminUsers"
-            },
-            ""
-          ]
-        }
+        { "Fn::Equals": [ { "Ref": "SonarqubeAppPrepUrl" }, "" ] }
       ]
     },
     "UseCfnUrl": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "CfnEndpointUrl"
-            },
-            ""
-          ]
-        }
+        { "Fn::Equals": [ { "Ref": "CfnEndpointUrl" }, "" ] }
       ]
     },
     "UseEnvironment": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "WatchmakerEnvironment"
-            },
-            ""
-          ]
-        }
-      ]
-    },
-    "UseOuPath": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "WatchmakerOuPath"
-            },
-            ""
-          ]
-        }
+        { "Fn::Equals": [ { "Ref": "WatchmakerEnvironment" }, "" ] }
       ]
     },
     "UseWamConfig": {
       "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "WatchmakerConfig"
-            },
-            ""
-          ]
-        }
+        { "Fn::Equals": [ { "Ref": "WatchmakerConfig" }, "" ] }
       ]
     }
   },
   "Description": "This template creates an Autoscaling Group and Launch Configuration that deploys Linux instances with Watchmaker, which applies the DISA STIG.",
-  "Mappings": {
-    "Distro2RootDevice": {
-      "AmazonLinux": {
-        "DeviceName": "xvda"
-      },
-      "CentOS": {
-        "DeviceName": "sda1"
-      },
-      "RedHat": {
-        "DeviceName": "sda1"
-      }
-    },
-    "InstanceTypeMap": {
-      "c4.large": {
-        "SupportsNvme": "false"
-      },
-      "c4.xlarge": {
-        "SupportsNvme": "false"
-      },
-      "c5.large": {
-        "SupportsNvme": "true"
-      },
-      "c5.xlarge": {
-        "SupportsNvme": "true"
-      },
-      "m4.large": {
-        "SupportsNvme": "false"
-      },
-      "m4.xlarge": {
-        "SupportsNvme": "false"
-      },
-      "m5.large": {
-        "SupportsNvme": "true"
-      },
-      "m5.xlarge": {
-        "SupportsNvme": "true"
-      },
-      "t2.large": {
-        "SupportsNvme": "false"
-      },
-      "t2.medium": {
-        "SupportsNvme": "false"
-      },
-      "t2.micro": {
-        "SupportsNvme": "false"
-      },
-      "t2.small": {
-        "SupportsNvme": "false"
-      },
-      "t2.xlarge": {
-        "SupportsNvme": "false"
-      }
-    }
-  },
+  "Mappings": { },
   "Metadata": {
     "AWS::CloudFormation::Interface": {
       "ParameterGroups": [
@@ -220,11 +53,9 @@
           },
           "Parameters": [
             "AmiId",
-            "AmiDistro",
             "InstanceType",
             "InstanceRole",
             "KeyPairName",
-            "NoPublicIp",
             "NoReboot",
             "NoUpdates",
             "SecurityGroupIds"
@@ -235,12 +66,9 @@
             "default": "EC2 Watchmaker Configuration"
           },
           "Parameters": [
-            "PypiIndexUrl",
+            "PipIndexFips",
             "WatchmakerConfig",
-            "WatchmakerEnvironment",
-            "WatchmakerOuPath",
-            "WatchmakerAdminGroups",
-            "WatchmakerAdminUsers"
+            "WatchmakerEnvironment"
           ]
         },
         {
@@ -248,9 +76,6 @@
             "default": "EC2 Application Configuration"
           },
           "Parameters": [
-            "AppScriptUrl",
-            "AppScriptParams",
-            "AppScriptShell"
           ]
         },
         {
@@ -258,10 +83,6 @@
             "default": "EC2 Application EBS Volume"
           },
           "Parameters": [
-            "AppVolumeDevice",
-            "AppVolumeMountPath",
-            "AppVolumeSize",
-            "AppVolumeType"
           ]
         },
         {
@@ -288,8 +109,6 @@
           },
           "Parameters": [
             "CfnEndpointUrl",
-            "CfnGetPipUrl",
-            "CfnBootstrapUtilsUrl",
             "ToggleCfnInitUpdate",
             "ToggleNewInstances"
           ]
@@ -306,13 +125,9 @@
     }
   },
   "Parameters": {
-    "AmiDistro": {
-      "AllowedValues": [
-        "AmazonLinux",
-        "CentOS",
-        "RedHat"
-      ],
-      "Description": "Linux distro of the AMI",
+    "AdminPubkeyURL": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL the file containing the admin users' SSH public keys.",
       "Type": "String"
     },
     "AmiId": {
@@ -320,65 +135,8 @@
       "Description": "ID of the AMI to launch",
       "Type": "String"
     },
-    "AppScriptParams": {
-      "Description": "Parameter string to pass to the application script. Ignored if \"AppScriptUrl\" is blank",
-      "Type": "String"
-    },
-    "AppScriptShell": {
-      "AllowedValues": [
-        "bash",
-        "python"
-      ],
-      "Default": "bash",
-      "Description": "Shell with which to execute the application script. Ignored if \"AppScriptUrl\" is blank",
-      "Type": "String"
-    },
-    "AppScriptUrl": {
-      "AllowedPattern": "^$|^s3://(.*)$",
-      "ConstraintDescription": "Must use an S3 URL (starts with \"s3://\")",
-      "Default": "",
-      "Description": "(Optional) S3 URL to the application script in an S3 bucket (s3://). Leave blank to launch without an application script. If specified, an appropriate \"InstanceRole\" is required",
-      "Type": "String"
-    },
-    "AppVolumeDevice": {
-      "AllowedValues": [
-        "true",
-        "false"
-      ],
-      "Default": "false",
-      "Description": "Decision whether to mount an extra EBS volume. Leave as default (\"false\") to launch without an extra application volume",
-      "Type": "String"
-    },
-    "AppVolumeMountPath": {
-      "AllowedPattern": "/.*",
-      "Default": "/opt/data",
-      "Description": "Filesystem path to mount the extra app volume. Ignored if \"AppVolumeDevice\" is blank",
-      "Type": "String"
-    },
-    "AppVolumeSize": {
-      "ConstraintDescription": "Must be between 1GB and 16384GB.",
-      "Default": "1",
-      "Description": "Size in GB of the EBS volume to create. Ignored if \"AppVolumeDevice\" is blank",
-      "MaxValue": "16384",
-      "MinValue": "1",
-      "Type": "Number"
-    },
-    "AppVolumeType": {
-      "AllowedValues": [
-        "gp2",
-        "io1",
-        "sc1",
-        "st1",
-        "standard"
-      ],
-      "Default": "gp2",
-      "Description": "Type of EBS volume to create. Ignored if \"AppVolumeDevice\" is blank",
-      "Type": "String"
-    },
-    "CfnBootstrapUtilsUrl": {
-      "AllowedPattern": "^http[s]?://.*\\.tar\\.gz$",
-      "Default": "https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz",
-      "Description": "URL to aws-cfn-bootstrap-latest.tar.gz",
+    "BackupBucket": {
+      "Description": "Name of S3 bucket used for Sonarqube backup tasks.",
       "Type": "String"
     },
     "CfnEndpointUrl": {
@@ -387,20 +145,37 @@
       "Description": "(Optional) URL to the CloudFormation Endpoint. e.g. https://cloudformation.us-east-1.amazonaws.com",
       "Type": "String"
     },
-    "CfnGetPipUrl": {
-      "AllowedPattern": "^http[s]?://.*\\.py$",
-      "Default": "https://bootstrap.pypa.io/get-pip.py",
-      "Description": "URL to get-pip.py",
-      "Type": "String"
-    },
     "DesiredCapacity": {
       "Default": "1",
       "Description": "Desired number of instances in the Autoscaling Group",
       "Type": "Number"
     },
-    "InstanceRole": {
+    "Domainname": {
+      "ConstraintDescription": "An alphanumeric string to complete the domain portion of the instance's FQDN.",
+      "Description": "Suffix for Sonarqube's hostname and DNS record",
+      "Type": "String"
+    },
+    "EpelRepo": {
+      "AllowedPattern": "^[a-z][a-z0-9-]*$",
+      "ConstraintDescription": "An alphanumeric string that represents the EPEL yum repo's label.",
+      "Default": "epel",
+      "Description": "Name of network's EPEL repo.",
+      "Type": "String"
+    },
+    "Hostname": {
+      "ConstraintDescription": "An alphanumeric string to complete the hostname portion of the instance's FQDN.",
+      "Default": "sonarqube",
+      "Description": "Node-name for Sonarqube's hostname and DNS record",
+      "Type": "String"
+    },
+    "InstanceRoleName": {
       "Default": "",
       "Description": "(Optional) IAM instance role to apply to the instance(s)",
+      "Type": "String"
+    },
+    "InstanceRoleProfile": {
+      "Default": "",
+      "Description": "(Optional) IAM instance-role profile to apply to the instance(s)",
       "Type": "String"
     },
     "InstanceType": {
@@ -410,14 +185,39 @@
         "t2.medium",
         "t2.large",
         "t2.xlarge",
-        "c4.large",
-        "c4.xlarge",
+        "t2.2xlarge",
+        "m5.large",
+        "m5.xlarge",
+        "m5.2xlarge",
+        "m5.4xlarge",
         "m4.large",
         "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
         "c5.large",
         "c5.xlarge",
-        "m5.large",
-        "m5.xlarge"
+        "c5.2xlarge",
+        "c5.4xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c3.medium",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "r4.large",
+        "r4.xlarge",
+        "r4.2xlarge",
+        "r4.4xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge"
       ],
       "Default": "t2.micro",
       "Description": "Amazon EC2 instance type",
@@ -426,6 +226,61 @@
     "KeyPairName": {
       "Description": "Public/private key pairs allow you to securely connect to your instance after it launches",
       "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "LdapAuthType": {
+      "AllowedValues": [
+        "simple",
+        "CRAM-MD5",
+        "DIGEST-MD5",
+        "GSSAPI"
+      ],
+      "Default": "simple",
+      "Description": "Authentication-type to use with directory-service.",
+      "Type": "String"
+    },
+    "LdapBaseDnGroups": {
+      "Default": "",
+      "Description": "Directory-node to descend from when searching for group memberships.",
+      "Type": "String"
+    },
+    "LdapBaseDnUsers": {
+      "Default": "",
+      "Description": "Directory-node to descend from when searching for usernames.",
+      "Type": "String"
+    },
+    "LdapBindDn": {
+      "Default": "",
+      "Description": "Distinguished-name of the authentication proxy-user account.",
+      "Type": "String"
+    },
+    "LdapBindPassword": {
+      "Default": "",
+      "Description": "Password of the authentication proxy-user account.",
+      "NoEcho": "True",
+      "Type": "String"
+    },
+    "LdapRealm": {
+      "Description": "FQDN-syle realm-name for directory objects.",
+      "Type": "String"
+    },
+    "LdapUrl": {
+      "Default": "",
+      "Description": "URL to connect to in order access a directory-service source.",
+      "Type": "String"
+    },
+    "LdapUseStartTLS": {
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "Directory-node to descend from when searching for usernames.",
+      "Type": "String"
+    },
+    "LdapUserQuery": {
+      "Default": "(&(objectClass=user)(sAMAccountName={login}))",
+      "Description": "Search-expression used to find users in directory",
+      "Type": "String"
     },
     "MaxCapacity": {
       "Default": "2",
@@ -436,15 +291,6 @@
       "Default": "1",
       "Description": "Minimum number of instances in the Autoscaling Group",
       "Type": "Number"
-    },
-    "NoPublicIp": {
-      "AllowedValues": [
-        "false",
-        "true"
-      ],
-      "Default": "true",
-      "Description": "Controls whether to assign the instance a public IP. Recommended to leave at \"true\" _unless_ launching in a public subnet",
-      "Type": "String"
     },
     "NoReboot": {
       "AllowedValues": [
@@ -464,15 +310,81 @@
       "Description": "Controls whether to run yum update during a stack update (on the initial instance launch, Watchmaker _always_ installs updates)",
       "Type": "String"
     },
-    "PypiIndexUrl": {
-      "AllowedPattern": "^http[s]?://.*$",
-      "Default": "https://pypi.org/simple",
-      "Description": "URL to the PyPi Index",
+    "PipIndexFips": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Default": "https://pypi.org/simple/",
+      "Description": "URL of pip index  that is compatible with FIPS 140-2 requirements.",
+      "Type": "String"
+    },
+    "PipRpm": {
+      "Default": "python2-pip",
+      "Description": "Name of preferred pip RPM.",
+      "Type": "String"
+    },
+    "PluginS3Location": {
+      "AllowedPattern": "^$|^s3://.*$",
+      "Description": "S3-path containing Sonarqube plugins.",
+      "Type": "String"
+    },
+    "ProvisionUser": {
+      "AllowedPattern": "[a-z0-9]{6,12}+",
+      "ConstraintDescription": "Alphanumeric string between 6 and 12 characters.",
+      "Default": "sonarbuild",
+      "Description": "Default login user account name.",
+      "Type": "String"
+    },
+    "PyStache": {
+      "Default": "pystache",
+      "Description": "Name of preferred pystache RPM.",
       "Type": "String"
     },
     "SecurityGroupIds": {
       "Description": "List of security groups to apply to the instance(s)",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "SonarqubeAppPrepUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the Sonarqube setup script.",
+      "Type": "String"
+    },
+    "SonarqubeDbHost": {
+      "Description": "FQDN of the Sonarqube database.",
+      "Type": "String"
+    },
+    "SonarqubeDbInst": {
+      "Description": "Instance-name of the Sonarqube database.",
+      "Type": "String"
+    },
+    "SonarqubeDbPass": {
+      "Description": "Password of the Sonarqube master database-user.",
+      "NoEcho": "True",
+      "Type": "String"
+    },
+    "SonarqubeDbUser": {
+      "Description": "Name of the Sonarqube master database-user.",
+      "Type": "String"
+    },
+    "SonarqubeOsPrepUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the script ready the OS for Sonarqube installation.",
+      "Type": "String"
+    },
+    "SonarqubeRpmName": {
+      "AllowedPattern": "^sonar$|^sonar-.*$",
+      "Default": "sonar",
+      "Description": "Name of Sonarqube RPM to install. Include release version if 'other-than-latest' is desired. Example values would be: sonar, sonar-X.Y or sonar-X.Y.Z",
+      "Type": "String"
+    },
+    "SonarqubeUser": {
+      "Default": "sonarqube",
+      "Description": "Userid the Sonarqube service runs under.",
+      "Type": "String"
+    },
+    "SonarqubeYumRepo": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$|^s3://.*$",
+      "Default": "http://downloads.sourceforge.net/project/sonar-pkg/rpm/sonar.repo",
+      "Description": "URL from which to download yum-repository information for SonarQube RPMs.",
+      "Type": "String"
     },
     "SubnetIds": {
       "Description": "List of subnets to associate to the Autoscaling Group",
@@ -496,16 +408,6 @@
       "Description": "A/B toggle that forces a change to instance userdata, triggering new instances via the Autoscale update policy",
       "Type": "String"
     },
-    "WatchmakerAdminGroups": {
-      "Default": "",
-      "Description": "(Optional) Colon-separated list of domain groups that should have admin permissions on the EC2 instance",
-      "Type": "String"
-    },
-    "WatchmakerAdminUsers": {
-      "Default": "",
-      "Description": "(Optional) Colon-separated list of domain users that should have admin permissions on the EC2 instance",
-      "Type": "String"
-    },
     "WatchmakerConfig": {
       "AllowedPattern": "^$|^(http[s]?|s3|file)://.*$",
       "Default": "",
@@ -522,37 +424,21 @@
       "Default": "",
       "Description": "Environment in which the instance is being deployed",
       "Type": "String"
-    },
-    "WatchmakerOuPath": {
-      "AllowedPattern": "^$|^(OU=.+,)+(DC=.+)+$",
-      "Default": "",
-      "Description": "(Optional) DN of the OU to place the instance when joining a domain. If blank and \"WatchmakerEnvironment\" enforces a domain join, the instance will be placed in a default container. Leave blank if not joining a domain, or if \"WatchmakerEnvironment\" is \"false\"",
-      "Type": "String"
     }
   },
   "Resources": {
-    "WatchmakerAutoScalingGroup": {
+    "SonarASG": {
       "CreationPolicy": {
         "ResourceSignal": {
-          "Count": {
-            "Ref": "DesiredCapacity"
-          },
+          "Count": { "Ref": "DesiredCapacity" },
           "Timeout": "PT30M"
         }
       },
       "Properties": {
-        "DesiredCapacity": {
-          "Ref": "DesiredCapacity"
-        },
-        "LaunchConfigurationName": {
-          "Ref": "WatchmakerLaunchConfig"
-        },
-        "MaxSize": {
-          "Ref": "MaxCapacity"
-        },
-        "MinSize": {
-          "Ref": "MinCapacity"
-        },
+        "DesiredCapacity": { "Ref": "DesiredCapacity" },
+        "LaunchConfigurationName": { "Ref": "SonarLC" },
+        "MaxSize": { "Ref": "MaxCapacity" },
+        "MinSize": { "Ref": "MinCapacity" },
         "Tags": [
           {
             "Key": "Name",
@@ -561,17 +447,13 @@
               "Fn::Join": [
                 "",
                 [
-                  {
-                    "Ref": "AWS::StackName"
-                  }
+                  { "Ref": "AWS::StackName" }
                 ]
               ]
             }
           }
         ],
-        "VPCZoneIdentifier": {
-          "Ref": "SubnetIds"
-        }
+        "VPCZoneIdentifier": { "Ref": "SubnetIds" }
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "UpdatePolicy": {
@@ -583,21 +465,134 @@
         }
       }
     },
-    "WatchmakerLaunchConfig": {
+    "SonarLC": {
       "Metadata": {
         "AWS::CloudFormation::Init": {
+        "admkey-install": {
+            "files": {
+              "/etc/cfn/files/adminkeys.pub": {
+                "source": { "Ref": "AdminPubkeyURL" },
+                "group": "root",
+                "mode": "000600",
+                "owner": "root"
+              },
+              "/etc/cfn/scripts/admkey.sh": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "#!/bin/bash\n\n",
+                      "PROVHOME=$(getent passwd ",
+                      { "Ref": "ProvisionUser" },
+                      " | awk -F\":\" '{print $6}')\n",
+                      "\n",
+                      "install -b -m 000600 -o ",
+                      { "Ref": "ProvisionUser" },
+                      " -g ",
+                      { "Ref": "ProvisionUser" },
+                      " /etc/cfn/files/adminkeys.pub",
+                      " ${PROVHOME}/.ssh/authorized_keys\n",
+                      "\n"
+                    ]
+                  ]
+                },
+                "group": "root",
+                "mode": "000700",
+                "owner": "root"
+              }
+            },
+            "commands": {
+              "1-admkey-install": {
+                "command": "bash -xe /etc/cfn/scripts/admkey.sh"
+              }
+            }
+          },
+          "app-install": {
+            "commands": {
+              "10-app-install": {
+                "command": "bash -xe /etc/cfn/scripts/sonarqubeprep.sh"
+              },
+              "20-service-reload": {
+                "command": "systemctl daemon-reload"
+              },
+              "21-service-enable": {
+                "command": "systemctl enable sonar"
+              },
+              "22-service-start": {
+                "command": "systemctl start sonar"
+              }
+            },
+            "files": {
+              "/etc/cfn/scripts/sonarqubeprep.sh": {
+                "group": "root",
+                "mode": "000700",
+                "owner": "root",
+                "source": { "Ref": "SonarqubeAppPrepUrl" }
+              },
+              "/etc/sysctl.d/sonarqube.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "vm.max_map_count = 262144\n"
+                    ]
+                  ]
+                },
+                "group": "root",
+                "mode": "000600",
+                "owner": "root"
+              },
+              "/etc/systemd/system/sonar.service": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[Unit]\n",
+                      "Description=SonarQube\n",
+                      "After=network.target network-online.target\n",
+                      "Wants=network-online.target\n",
+                      "\n",
+                      "[Service]\n",
+                      "ExecStart=/opt/sonar/bin/linux-x86-64/sonar.sh start",
+                      "\n",
+                      "ExecStop=/opt/sonar/bin/linux-x86-64/sonar.sh stop",
+                      "\n",
+                      "ExecReload=/opt/sonar/bin/linux-x86-64/sonar.sh restart",
+                      "\n",
+                      "Group=sonar\n",
+                      "LimitNOFILE=65536\n",
+                      "PIDFile=/opt/sonar/bin/linux-x86-64/SonarQube.pid",
+                      "\n",
+                      "Restart=always\n",
+                      "RestartSec=30\n",
+                      "User=sonar\n",
+                      "Type=forking\n",
+                      "\n",
+                      "[Install]\n",
+                      "WantedBy=multi-user.target\n"
+                    ]
+                  ]
+                },
+                "group": "root",
+                "mode": "000600",
+                "owner": "root"
+              }
+            }
+          },
           "configSets": {
             "launch": [
               "setup",
+              "admkey-install",
               "watchmaker-install",
               "watchmaker-launch",
               {
                 "Fn::If": [
-                  "ExecuteAppScript",
-                  "make-app",
-                  {
-                    "Ref": "AWS::NoValue"
-                  }
+                  "UseCfnAppInstaller",
+                  [
+                    "osprep-launch",
+                    "app-install"
+                  ],
+                  { "Ref": "AWS::NoValue" }
                 ]
               },
               "finalize",
@@ -605,32 +600,30 @@
                 "Fn::If": [
                   "Reboot",
                   "reboot",
-                  {
-                    "Ref": "AWS::NoValue"
-                  }
+                  { "Ref": "AWS::NoValue" }
                 ]
               }
             ],
             "update": [
               "setup",
+              "admkey-install",
               {
                 "Fn::If": [
                   "InstallUpdates",
                   "install-updates",
-                  {
-                    "Ref": "AWS::NoValue"
-                  }
+                  { "Ref": "AWS::NoValue" }
                 ]
               },
               "watchmaker-install",
               "watchmaker-update",
               {
                 "Fn::If": [
-                  "ExecuteAppScript",
-                  "make-app",
-                  {
-                    "Ref": "AWS::NoValue"
-                  }
+                  "UseCfnAppInstaller",
+                  [
+                    "osprep-launch",
+                    "app-install"
+                  ],
+                  { "Ref": "AWS::NoValue" }
                 ]
               },
               "finalize",
@@ -638,12 +631,33 @@
                 "Fn::If": [
                   "Reboot",
                   "reboot",
-                  {
-                    "Ref": "AWS::NoValue"
-                  }
+                  { "Ref": "AWS::NoValue" }
                 ]
               }
             ]
+          },
+          "cronSetup": {
+            "files": {
+              "/etc/cron.d/SonarqubeBkup": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "# Sweep sonarqube home contents to S3\n",
+                      "SHELL=/bin/bash\n",
+                      "PATH=/sbin:/bin:/usr/sbin:/usr/bin\n",
+                      "30/2 * * * * sonarqube aws s3 sync /home/sonarqube",
+                      " s3://",
+                       { "Ref": "BackupBucket" },
+                       "/Backups/$(date '+\\%A')/\n"
+                    ]
+                  ]
+                },
+                "group": "root",
+                "mode": "000700",
+                "owner": "root"
+              }
+            }
           },
           "finalize": {
             "commands": {
@@ -654,10 +668,8 @@
                     [
                       "/opt/aws/bin/cfn-signal -e 0",
                       " --stack ",
-                      {
-                        "Ref": "AWS::StackName"
-                      },
-                      " --resource WatchmakerAutoScalingGroup",
+                      { "Ref": "AWS::StackName" },
+                      " --resource SonarASG",
                       {
                         "Fn::If": [
                           "AssignInstanceRole",
@@ -666,9 +678,7 @@
                               "",
                               [
                                 " --role ",
-                                {
-                                  "Ref": "InstanceRole"
-                                }
+                                { "Ref": "InstanceRoleName" }
                               ]
                             ]
                           },
@@ -683,9 +693,7 @@
                               "",
                               [
                                 " --url ",
-                                {
-                                  "Ref": "CfnEndpointUrl"
-                                }
+                                { "Ref": "CfnEndpointUrl" }
                               ]
                             ]
                           },
@@ -693,9 +701,7 @@
                         ]
                       },
                       " --region ",
-                      {
-                        "Ref": "AWS::Region"
-                      },
+                      { "Ref": "AWS::Region" },
                       "\n"
                     ]
                   ]
@@ -711,56 +717,18 @@
               }
             }
           },
-          "make-app": {
+          "osprep-launch": {
+            "files": {
+              "/etc/cfn/scripts/osprep.sh": {
+                "group": "root",
+                "mode": "000700",
+                "owner": "root",
+                "source": { "Ref": "SonarqubeOsPrepUrl" }
+              }
+            },
             "commands": {
-              "05-get-appscript": {
-                "command": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "mkdir -p /etc/cfn/scripts &&",
-                      " aws s3 cp ",
-                      {
-                        "Ref": "AppScriptUrl"
-                      },
-                      " /etc/cfn/scripts/make-app",
-                      " --region ",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      " &&",
-                      " chown root:root /etc/cfn/scripts/make-app &&",
-                      " chmod 700 /etc/cfn/scripts/make-app"
-                    ]
-                  ]
-                },
-                "env": {
-                  "AWS_CA_BUNDLE": "/etc/pki/tls/certs/ca-bundle.crt",
-                  "REQUESTS_CA_BUNDLE": "/etc/pki/tls/certs/ca-bundle.crt"
-                }
-              },
-              "10-make-app": {
-                "command": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Ref": "AppScriptShell"
-                      },
-                      " /etc/cfn/scripts/make-app ",
-                      {
-                        "Ref": "AppScriptParams"
-                      }
-                    ]
-                  ]
-                },
-                "env": {
-                  "AWS_CA_BUNDLE": "/etc/pki/tls/certs/ca-bundle.crt",
-                  "AWS_DEFAULT_REGION": {
-                    "Ref": "AWS::Region"
-                  },
-                  "REQUESTS_CA_BUNDLE": "/etc/pki/tls/certs/ca-bundle.crt"
-                }
+              "1-osprep-launch": {
+                "command": "bash -xe /etc/cfn/scripts/osprep.sh"
               }
             }
           },
@@ -773,6 +741,88 @@
           },
           "setup": {
             "files": {
+              "/etc/cfn/Sonarqube.envs": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "SONARQUBE_S3_BACKUP=",
+                       { "Ref": "BackupBucket" },
+                       "\n",
+                      "SONARQUBE_DBUSER=",
+                       { "Ref": "SonarqubeDbUser" },
+                       "\n",
+                      "SONARQUBE_DBPASS=",
+                       { "Ref": "SonarqubeDbPass" },
+                       "\n",
+                      "SONARQUBE_DBHOST=",
+                       { "Ref": "SonarqubeDbHost" },
+                       "\n",
+                      "SONARQUBE_DBINST=",
+                       { "Ref": "SonarqubeDbInst" },
+                       "\n",
+                      "SONAR_USER=",
+                       { "Ref": "SonarqubeUser" },
+                       "\n",
+                      "SONARQUBE_YUM_REPO_URL=",
+                       { "Ref": "SonarqubeYumRepo" },
+                       "\n",
+                      "SONARQUBE_RPM=",
+                       { "Ref": "SonarqubeRpmName" },
+                       "\n",
+                      "SONARQUBE_OS_PREP=",
+                       { "Ref": "SonarqubeOsPrepUrl" },
+                       "\n",
+                      "SONARQUBE_LDAP_AUTHTYPE=",
+                       { "Ref": "LdapAuthType" },
+                       "\n",
+                      "SONARQUBE_LDAP_BASEDN_GROUPS=",
+                       { "Ref": "LdapBaseDnGroups" },
+                       "\n",
+                      "SONARQUBE_LDAP_BASEDN_USERS=",
+                       { "Ref": "LdapBaseDnUsers" },
+                       "\n",
+                      "SONARQUBE_LDAP_BINDDN=",
+                       { "Ref": "LdapBindDn" },
+                       "\n",
+                      "SONARQUBE_LDAP_BINDPASS=",
+                       { "Ref": "LdapBindPassword" },
+                       "\n",
+                      "SONARQUBE_LDAP_REALM=",
+                       { "Ref": "LdapRealm" },
+                       "\n",
+                      "SONARQUBE_LDAP_URL=",
+                       { "Ref": "LdapUrl" },
+                       "\n",
+                      "SONARQUBE_LDAP_USETLS=",
+                       { "Ref": "LdapUseStartTLS" },
+                       "\n",
+                      "SONARQUBE_LDAP_QUERYSTRING=",
+                       { "Ref": "LdapUserQuery" },
+                       "\n",
+                      {
+                        "Fn::If": [
+                          "HasPluginPath",
+                          {
+                            "Fn::Join" : [
+                              "",
+                              [
+                                "SONARQUBE_PLUGIN_LOC=",
+                                 { "Ref": "PluginS3Location" },
+                                 "\n"
+                              ]
+                            ]
+                          },
+                          { "Ref": "AWS::NoValue" }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                "group": "root",
+                "mode": "000700",
+                "owner": "root"
+              },
               "/etc/cfn/cfn-hup.conf": {
                 "content": {
                   "Fn::Join": [
@@ -780,14 +830,10 @@
                     [
                       "[main]\n",
                       "stack=",
-                      {
-                        "Ref": "AWS::StackId"
-                      },
+                      { "Ref": "AWS::StackId" },
                       "\n",
                       "region=",
-                      {
-                        "Ref": "AWS::Region"
-                      },
+                      { "Ref": "AWS::Region" },
                       "\n",
                       {
                         "Fn::If": [
@@ -797,9 +843,7 @@
                               "",
                               [
                                 "role=",
-                                {
-                                  "Ref": "InstanceRole"
-                                },
+                                { "Ref": "InstanceRoleName" },
                                 "\n"
                               ]
                             ]
@@ -815,9 +859,7 @@
                               "",
                               [
                                 "url=",
-                                {
-                                  "Ref": "CfnEndpointUrl"
-                                },
+                                { "Ref": "CfnEndpointUrl" },
                                 "\n"
                               ]
                             ]
@@ -843,13 +885,11 @@
                     [
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
-                      "path=Resources.WatchmakerLaunchConfig.Metadata\n",
+                      "path=Resources.SonarLC.Metadata\n",
                       "action=/opt/aws/bin/cfn-init -v -c update",
                       " --stack ",
-                      {
-                        "Ref": "AWS::StackName"
-                      },
-                      " --resource WatchmakerLaunchConfig",
+                      { "Ref": "AWS::StackName" },
+                      " --resource SonarLC",
                       {
                         "Fn::If": [
                           "AssignInstanceRole",
@@ -858,9 +898,7 @@
                               "",
                               [
                                 " --role ",
-                                {
-                                  "Ref": "InstanceRole"
-                                }
+                                { "Ref": "InstanceRoleName" }
                               ]
                             ]
                           },
@@ -875,9 +913,7 @@
                               "",
                               [
                                 " --url ",
-                                {
-                                  "Ref": "CfnEndpointUrl"
-                                }
+                                { "Ref": "CfnEndpointUrl" }
                               ]
                             ]
                           },
@@ -885,9 +921,7 @@
                         ]
                       },
                       " --region ",
-                      {
-                        "Ref": "AWS::Region"
-                      },
+                      { "Ref": "AWS::Region" },
                       "\n",
                       "runas=root\n"
                     ]
@@ -904,9 +938,7 @@
                     [
                       "#!/bin/bash\n\n",
                       "PYPI_URL=",
-                      {
-                        "Ref": "PypiIndexUrl"
-                      },
+                      { "Ref": "PipIndexFips" },
                       "\n",
                       "pip install --index-url=\"$PYPI_URL\" wheel==0.29.0\n",
                       "pip install",
@@ -939,9 +971,7 @@
                 "command": "bash -xe /etc/cfn/scripts/watchmaker-install.sh",
                 "env": {
                   "AWS_CA_BUNDLE": "/etc/pki/tls/certs/ca-bundle.crt",
-                  "AWS_DEFAULT_REGION": {
-                    "Ref": "AWS::Region"
-                  },
+                  "AWS_DEFAULT_REGION": { "Ref": "AWS::Region" },
                   "REQUESTS_CA_BUNDLE": "/etc/pki/tls/certs/ca-bundle.crt"
                 }
               }
@@ -965,9 +995,7 @@
                               "",
                               [
                                 " --config \"",
-                                {
-                                  "Ref": "WatchmakerConfig"
-                                },
+                                { "Ref": "WatchmakerConfig" },
                                 "\""
                               ]
                             ]
@@ -983,63 +1011,7 @@
                               "",
                               [
                                 " --env \"",
-                                {
-                                  "Ref": "WatchmakerEnvironment"
-                                },
-                                "\""
-                              ]
-                            ]
-                          },
-                          ""
-                        ]
-                      },
-                      {
-                        "Fn::If": [
-                          "UseOuPath",
-                          {
-                            "Fn::Join": [
-                              "",
-                              [
-                                " --ou-path \"",
-                                {
-                                  "Ref": "WatchmakerOuPath"
-                                },
-                                "\""
-                              ]
-                            ]
-                          },
-                          ""
-                        ]
-                      },
-                      {
-                        "Fn::If": [
-                          "UseAdminGroups",
-                          {
-                            "Fn::Join": [
-                              "",
-                              [
-                                " --admin-groups \"",
-                                {
-                                  "Ref": "WatchmakerAdminGroups"
-                                },
-                                "\""
-                              ]
-                            ]
-                          },
-                          ""
-                        ]
-                      },
-                      {
-                        "Fn::If": [
-                          "UseAdminUsers",
-                          {
-                            "Fn::Join": [
-                              "",
-                              [
-                                " --admin-users \"",
-                                {
-                                  "Ref": "WatchmakerAdminUsers"
-                                },
+                                { "Ref": "WatchmakerEnvironment" },
                                 "\""
                               ]
                             ]
@@ -1072,9 +1044,7 @@
                               "",
                               [
                                 " --config \"",
-                                {
-                                  "Ref": "WatchmakerConfig"
-                                },
+                                { "Ref": "WatchmakerConfig" },
                                 "\""
                               ]
                             ]
@@ -1090,63 +1060,7 @@
                               "",
                               [
                                 " --env \"",
-                                {
-                                  "Ref": "WatchmakerEnvironment"
-                                },
-                                "\""
-                              ]
-                            ]
-                          },
-                          ""
-                        ]
-                      },
-                      {
-                        "Fn::If": [
-                          "UseOuPath",
-                          {
-                            "Fn::Join": [
-                              "",
-                              [
-                                " --ou-path \"",
-                                {
-                                  "Ref": "WatchmakerOuPath"
-                                },
-                                "\""
-                              ]
-                            ]
-                          },
-                          ""
-                        ]
-                      },
-                      {
-                        "Fn::If": [
-                          "UseAdminGroups",
-                          {
-                            "Fn::Join": [
-                              "",
-                              [
-                                " --admin-groups \"",
-                                {
-                                  "Ref": "WatchmakerAdminGroups"
-                                },
-                                "\""
-                              ]
-                            ]
-                          },
-                          ""
-                        ]
-                      },
-                      {
-                        "Fn::If": [
-                          "UseAdminUsers",
-                          {
-                            "Fn::Join": [
-                              "",
-                              [
-                                " --admin-users \"",
-                                {
-                                  "Ref": "WatchmakerAdminUsers"
-                                },
+                                { "Ref": "WatchmakerEnvironment" },
                                 "\""
                               ]
                             ]
@@ -1161,86 +1075,30 @@
             }
           }
         },
-        "ToggleCfnInitUpdate": {
-          "Ref": "ToggleCfnInitUpdate"
-        }
+        "ToggleCfnInitUpdate": { "Ref": "ToggleCfnInitUpdate" }
       },
       "Properties": {
-        "AssociatePublicIpAddress": {
-          "Fn::If": [
-            "AssignPublicIp",
-            "true",
-            "false"
-          ]
-        },
+        "AssociatePublicIpAddress": "false",
         "BlockDeviceMappings": [
           {
-            "DeviceName": {
-              "Fn::Join": [
-                "",
-                [
-                  "/dev/",
-                  {
-                    "Fn::FindInMap": [
-                      "Distro2RootDevice",
-                      {
-                        "Ref": "AmiDistro"
-                      },
-                      "DeviceName"
-                    ]
-                  }
-                ]
-              ]
-            },
+            "DeviceName": "/dev/sda1",
             "Ebs": {
               "DeleteOnTermination": "true",
               "VolumeType": "gp2"
             }
-          },
-          {
-            "Fn::If": [
-              "CreateAppVolume",
-              {
-                "DeviceName": "/dev/xvdf",
-                "Ebs": {
-                  "DeleteOnTermination": "true",
-                  "VolumeSize": {
-                    "Ref": "AppVolumeSize"
-                  },
-                  "VolumeType": {
-                    "Ref": "AppVolumeType"
-                  }
-                }
-              },
-              {
-                "Ref": "AWS::NoValue"
-              }
-            ]
           }
         ],
         "IamInstanceProfile": {
           "Fn::If": [
             "AssignInstanceRole",
-            {
-              "Ref": "InstanceRole"
-            },
-            {
-              "Ref": "AWS::NoValue"
-            }
+            { "Ref": "InstanceRoleProfile" },
+            { "Ref": "AWS::NoValue" }
           ]
         },
-        "ImageId": {
-          "Ref": "AmiId"
-        },
-        "InstanceType": {
-          "Ref": "InstanceType"
-        },
-        "KeyName": {
-          "Ref": "KeyPairName"
-        },
-        "SecurityGroups": {
-          "Ref": "SecurityGroupIds"
-        },
+        "ImageId": { "Ref": "AmiId" },
+        "InstanceType": { "Ref": "InstanceType" },
+        "KeyName": { "Ref": "KeyPairName" },
+        "SecurityGroups": { "Ref": "SecurityGroupIds" },
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
@@ -1256,45 +1114,23 @@
                 "Content-Disposition: attachment; filename=\"cloud.cfg\"\n",
                 "\n",
                 "#cloud-config\n",
-                {
-                  "Fn::If": [
-                    "CreateAppVolume",
-                    {
-                      "Fn::Join": [
-                        "",
-                        [
-                          "bootcmd:\n",
-                          "- cloud-init-per instance mkfs-appvolume mkfs -t ext4 ",
-                          {
-                            "Fn::If": [
-                              "SupportsNvme",
-                              "/dev/nvme1n1",
-                              "/dev/xvdf"
-                            ]
-                          },
-                          "\n",
-                          "mounts:\n",
-                          "- [ ",
-                          {
-                            "Fn::If": [
-                              "SupportsNvme",
-                              "/dev/nvme1n1",
-                              "/dev/xvdf"
-                            ]
-                          },
-                          ", ",
-                          {
-                            "Ref": "AppVolumeMountPath"
-                          },
-                          " ]\n"
-                        ]
-                      ]
-                    },
-                    {
-                      "Ref": "AWS::NoValue"
-                    }
-                  ]
-                },
+                "\n",
+                "system_info:\n",
+                "  default_user:\n",
+                "    name: ",
+                { "Ref": "ProvisionUser" },
+                "\n",
+                "users:\n",
+                "  - default\n",
+                "\n",
+                "hostname: ",
+                { "Ref": "Hostname" },
+                "\n",
+                "fqdn: ",
+                { "Ref": "Hostname" },
+                ".",
+                { "Ref": "Domainname" },
+                "\n",
                 "\n",
                 "--===============3585321300151562773==\n",
                 "Content-Type: text/x-shellscript; charset=\"us-ascii\"\n",
@@ -1304,51 +1140,46 @@
                 "\n",
                 "#!/bin/bash -xe\n\n",
                 "# CFN LaunchConfig Update Toggle: ",
-                {
-                  "Ref": "ToggleNewInstances"
-                },
+                { "Ref": "ToggleNewInstances" },
                 "\n\n",
                 "# Export cert bundle ENVs\n",
                 "export AWS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt\n",
                 "export REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt\n\n",
-                "# Get pip\n",
-                "curl --silent --show-error --retry 5 -L ",
-                {
-                  "Ref": "CfnGetPipUrl"
-                },
-                " | python - --index-url=",
-                {
-                  "Ref": "PypiIndexUrl"
-                },
-                "\n\n",
-                "# Add pip to path\n",
-                "hash pip 2> /dev/null || ",
-                "PATH=\"${PATH}:/usr/local/bin\"",
-                "\n\n",
+                "\n",
+                "# Define our error-handler\n",
+                "function err_exit {\n",
+                "   echo \"${1}\"\n",
+                "   logger -p kern.crit -t UserData \"${1}\"\n",
+                "   /opt/aws/bin/cfn-signal -e 1 --stack ",
+                    { "Ref": "AWS::StackName" },
+                    " --resource SonarLC\n",
+                "   exit 1\n",
+                "}\n",
+                "\n",
+                "# Install RPMs needed by the cfn-tools.\n",
+                "yum --enablerepo=",
+                 { "Ref": "EpelRepo" },
+                 " install -y ",
+                 { "Ref": "PyStache" },
+                 " ",
+                 { "Ref": "PipRpm" },
+                 " || err_exit 'Could not install Cfn dependencies.'\n",
+                "\n",
+                "# Update cfn-bootstrapper hash method\n",
+                "PYVERS=$(python -c 'import sys;",
+                 " version=sys.version_info[:2];",
+                 " print(\"{0}.{1}\".format(*version))')\n",
+                "sed -i '/^[ \\t][ \\t]*self._etag/s/etag$/None/'",
+                 " /usr/lib/python${PYVERS}/site-packages/cfnbootstrap",
+                 "/util.py\n",
+                "\n",
                 "# Upgrade pip and setuptools\n",
                 "PYPI_URL=",
-                {
-                  "Ref": "PypiIndexUrl"
-                },
+                { "Ref": "PipIndexFips" },
                 "\n",
                 "pip install",
                 " --index-url=\"$PYPI_URL\"",
                 " --upgrade pip setuptools\n\n",
-                "# Fix python urllib3 warnings\n",
-                "yum -y install gcc python-devel libffi-devel openssl-devel\n",
-                "pip install",
-                " --index-url=\"$PYPI_URL\"",
-                " --upgrade pyopenssl ndg-httpsclient pyasn1\n\n",
-                "# Get cfn utils\n",
-                "pip install",
-                " --index-url=\"$PYPI_URL\"",
-                " --upgrade ",
-                {
-                  "Ref": "CfnBootstrapUtilsUrl"
-                },
-                "\n\n",
-                "# Remove gcc now that it is no longer needed\n",
-                "yum -y remove gcc --setopt=clean_requirements_on_remove=1\n\n",
                 "# Fixup cfn utils\n",
                 "INITDIR=$(find -L /opt/aws/apitools/cfn-init/init -name redhat ",
                 "2> /dev/null || echo /usr/init/redhat)\n",
@@ -1372,10 +1203,8 @@
                 "# Execute cfn-init\n",
                 "/opt/aws/bin/cfn-init -v -c launch",
                 " --stack ",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                " --resource WatchmakerLaunchConfig",
+                { "Ref": "AWS::StackName" },
+                " --resource SonarLC",
                 {
                   "Fn::If": [
                     "AssignInstanceRole",
@@ -1384,9 +1213,7 @@
                         "",
                         [
                           " --role ",
-                          {
-                            "Ref": "InstanceRole"
-                          }
+                          { "Ref": "InstanceRoleName" }
                         ]
                       ]
                     },
@@ -1401,9 +1228,7 @@
                         "",
                         [
                           " --url ",
-                          {
-                            "Ref": "CfnEndpointUrl"
-                          }
+                          { "Ref": "CfnEndpointUrl" }
                         ]
                       ]
                     },
@@ -1411,17 +1236,13 @@
                   ]
                 },
                 " --region ",
-                {
-                  "Ref": "AWS::Region"
-                },
+                { "Ref": "AWS::Region" },
                 " ||",
                 " ( echo 'ERROR: cfn-init failed! Aborting!';",
                 " /opt/aws/bin/cfn-signal -e 1",
                 "  --stack ",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                "  --resource WatchmakerAutoScalingGroup",
+                { "Ref": "AWS::StackName" },
+                "  --resource SonarASG",
                 {
                   "Fn::If": [
                     "AssignInstanceRole",
@@ -1430,9 +1251,7 @@
                         "",
                         [
                           " --role ",
-                          {
-                            "Ref": "InstanceRole"
-                          }
+                          { "Ref": "InstanceRoleName" }
                         ]
                       ]
                     },
@@ -1447,9 +1266,7 @@
                         "",
                         [
                           " --url ",
-                          {
-                            "Ref": "CfnEndpointUrl"
-                          }
+                          { "Ref": "CfnEndpointUrl" }
                         ]
                       ]
                     },
@@ -1457,9 +1274,7 @@
                   ]
                 },
                 "  --region ",
-                {
-                  "Ref": "AWS::Region"
-                },
+                { "Ref": "AWS::Region" },
                 ";",
                 " exit 1",
                 " )\n\n",
