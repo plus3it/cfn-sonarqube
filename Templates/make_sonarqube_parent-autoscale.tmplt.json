@@ -1,0 +1,750 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This template coordinates the running of the Sonarqube S3, IAM and EC2 templates.",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Child Template URLs"
+          },
+          "Parameters": [
+            "SgTemplateUri",
+            "EfsTemplate",
+            "RdsTemplateUri",
+            "BucketTemplate",
+            "IamTemplate",
+            "Ec2Template",
+            "ElbTemplate"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Instance Attributes"
+          },
+          "Parameters": [
+            "Hostname",
+            "Domainname",
+            "AmiId",
+            "InstanceType",
+            "ProvisionUser",
+            "KeyPairName",
+            "AdminPubkeyURL",
+            "WatchmakerEnvironment",
+            "WatchmakerConfig",
+            "EpelRepo",
+            "PipRpm",
+            "PyStache",
+            "PipIndexFips"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Application Config Info"
+          },
+          "Parameters": [
+            "SonarOsPrepUrl",
+            "SonarAppSetupUrl",
+            "SonarqubeYumRepo",
+            "SonarqubeRpmName",
+            "PluginsBucket",
+            "PluginFolder"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Application Authentication"
+          },
+          "Parameters": [
+            "LdapRealm",
+            "LdapUrl",
+            "LdapAuthType",
+            "LdapUseStartTLS",
+            "LdapBindDn",
+            "LdapBindPassword",
+            "LdapUserQuery",
+            "LdapBaseDnGroups",
+            "LdapBaseDnUsers"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Bucket Options"
+          },
+          "Parameters": [
+            "SonarqubeBackupBucket",
+            "FinalExpirationDays",
+            "ReportingBucket",
+            "BucketInventoryTracking"
+          ]
+        },
+        {
+          "Label": {
+            "default": "DB Connection Info"
+          },
+          "Parameters": [
+            "PgsqlVersion",
+            "DbInstanceType",
+            "DbDataSize",
+            "DbSnapshotId",
+            "DbInstanceName",
+            "DbNodeName",
+            "DbAdminName",
+            "DbAdminPass"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Rev-Proxy Info"
+          },
+          "Parameters": [
+            "ProxyPrettyName",
+            "SonarqubeListenerCert",
+            "SonarqubeServicePort",
+            "ElbSubnets",
+            "BackendTimeout"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Miscellaneous Info"
+          },
+          "Parameters": [
+            "ServiceTld",
+            "TargetVPC",
+            "RolePrefix",
+            "HaSubnets"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "FinalExpirationDays": {
+          "default": "Maximum Retention"
+        },
+        "RetainIncompleteDays": {
+          "default": "Cleanup Incompletes"
+        },
+        "SonarqubeBackupBucket": {
+          "default": "Name for Backup Bucket"
+        },
+        "TierToS3Days": {
+          "default": "Tier to Glacier"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "AdminPubkeyURL": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL the file containing the admin users' SSH public keys.",
+      "Type": "String"
+    },
+    "AmiId": {
+      "AllowedPattern": "^ami-[0-9a-z]{8}$|^ami-[0-9a-z]{17}$",
+      "Description": "ID of the AMI to launch",
+      "Type": "String"
+    },
+    "BackendTimeout": {
+      "Default": "600",
+      "Description": "How long - in seconds - back-end connection may be idle before attempting session-cleanup",
+      "MaxValue": "3600",
+      "MinValue": "60",
+      "Type": "Number"
+    },
+    "BucketInventoryTracking": {
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "(Optional) Whether to enable generic bucket inventory-tracking. Requires setting of the 'ReportingBucket' parameter.",
+      "Type": "String"
+    },
+    "BucketTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's S3 bucket(s).",
+      "Type": "String"
+    },
+    "DbAdminName": {
+      "AllowedPattern": "^[a-z][a-z0-9-]*[a-z0-9]",
+      "Description": "Name of the SonarQube master database-user.",
+      "Type": "String"
+    },
+    "DbAdminPass": {
+      "Description": "Password of the SonarQube master database-user.",
+      "NoEcho": "True",
+      "Type": "String"
+    },
+    "DbDataSize": {
+      "ConstraintDescription": "Must be between 5GB and 16384GB.",
+      "Default": "5",
+      "Description": "Size in GiB of the RDS table-space to create.",
+      "MaxValue": "16384",
+      "MinValue": "5",
+      "Type": "Number"
+    },
+    "DbInstanceName": {
+      "AllowedPattern": "^[a-z][a-z0-9-]*[a-z0-9]",
+      "Description": "Instance-name of the SonarQube database.",
+      "Type": "String"
+    },
+    "DbInstanceType": {
+      "AllowedValues": [
+        "db.t2.micro",
+        "db.t2.small",
+        "db.t2.medium",
+        "db.t2.large",
+        "db.t2.xlarge",
+        "db.t2.2xlarge",
+        "db.m4.large",
+        "db.m4.xlarge",
+        "db.m4.2xlarge",
+        "db.m4.4xlarge",
+        "db.m4.10xlarge",
+        "db.m3.medium",
+        "db.m3.large",
+        "db.m3.xlarge",
+        "db.m3.2xlarge",
+        "db.m3.4xlarge",
+        "db.r4.large",
+        "db.r4.xlarge",
+        "db.r4.2xlarge",
+        "db.r4.4xlarge",
+        "db.r4.8xlarge",
+        "db.r3.large",
+        "db.r3.xlarge",
+        "db.r3.2xlarge",
+        "db.r3.4xlarge",
+        "db.r3.8xlarge"
+      ],
+      "Default": "db.t2.small",
+      "Description": "Amazon RDS instance type",
+      "Type": "String"
+    },
+    "DbNodeName": {
+      "Description": "NodeName of the SonarQube database.",
+      "Type": "String"
+    },
+    "DbSnapshotId": {
+      "AllowedPattern": "^$|^arn:.*$",
+      "Default": "",
+      "Description": "(Optional) RDS snapshot-ARN to clone new database from.",
+      "Type": "String"
+    },
+    "DesiredCapacity": {
+      "Default": "1",
+      "Description": "Desired number of instances in the Autoscaling Group",
+      "Type": "Number"
+    },
+    "Domainname": {
+      "ConstraintDescription": "An alphanumeric string to complete the domain portion of the instance's FQDN.",
+      "Description": "Suffix for Sonarqube's hostname and DNS record",
+      "Type": "String"
+    },
+    "Ec2Template": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates the EC2 instance to host the SonarQube application.",
+      "Type": "String"
+    },
+    "EfsTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates the EFS service to host SonarQube's persistent data.",
+      "Type": "String"
+    },
+    "ElbSubnets": {
+      "Description": "Public-facing subnets for ELB to proxy requests from.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "ElbTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates the ELB providing public-to-private reverse-proxy service.",
+      "Type": "String"
+    },
+    "EpelRepo": {
+      "AllowedPattern": "^[a-z][a-z0-9-]*$",
+      "ConstraintDescription": "An alphanumeric string that represents the EPEL yum repo's label.",
+      "Default": "epel",
+      "Description": "Name of network's EPEL repo.",
+      "Type": "String"
+    },
+    "FinalExpirationDays": {
+      "ConstraintDescription": "Must be an integer value greater than '0'.",
+      "Default": "30",
+      "Description": "Number of days to retain objects before aging them out of the bucket",
+      "Type": "Number"
+    },
+    "HaSubnets": {
+      "Description": "Select three subnets - each from different Availability Zones.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "Hostname": {
+      "ConstraintDescription": "An alphanumeric string to complete the hostname portion of the instance's FQDN.",
+      "Default": "sonarqube",
+      "Description": "Node-name for Sonarqube's hostname and DNS record",
+      "Type": "String"
+    },
+    "IamTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's IAM role(s).",
+      "Type": "String"
+    },
+    "InstanceType": {
+      "AllowedValues": [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "t2.xlarge",
+        "t2.2xlarge",
+        "m5.large",
+        "m5.xlarge",
+        "m5.2xlarge",
+        "m5.4xlarge",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c5.large",
+        "c5.xlarge",
+        "c5.2xlarge",
+        "c5.4xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c3.medium",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "r4.large",
+        "r4.xlarge",
+        "r4.2xlarge",
+        "r4.4xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge"
+      ],
+      "Default": "t2.large",
+      "Description": "Amazon EC2 instance type",
+      "Type": "String"
+    },
+    "KeyPairName": {
+      "Description": "Public/private key pairs allowing the provisioning-user to securely connect to the instance after it launches.",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "LdapAuthType": {
+      "AllowedValues": [
+        "simple",
+        "CRAM-MD5",
+        "DIGEST-MD5",
+        "GSSAPI"
+      ],
+      "Default": "simple",
+      "Description": "Authentication-type to use with directory-service.",
+      "Type": "String"
+    },
+    "LdapBaseDnGroups": {
+      "Default": "",
+      "Description": "Directory-node to descend from when searching for group memberships.",
+      "Type": "String"
+    },
+    "LdapBaseDnUsers": {
+      "Default": "",
+      "Description": "Directory-node to descend from when searching for usernames.",
+      "Type": "String"
+    },
+    "LdapBindDn": {
+      "Default": "",
+      "Description": "Distinguished-name of the authentication proxy-user account.",
+      "Type": "String"
+    },
+    "LdapBindPassword": {
+      "Default": "",
+      "Description": "Password of the authentication proxy-user account.",
+      "NoEcho": "True",
+      "Type": "String"
+    },
+    "LdapRealm": {
+      "Description": "FQDN-syle realm-name for directory objects.",
+      "Type": "String"
+    },
+    "LdapUrl": {
+      "Default": "",
+      "Description": "URL to connect to in order access a directory-service source.",
+      "Type": "String"
+    },
+    "LdapUseStartTLS": {
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "Directory-node to descend from when searching for usernames.",
+      "Type": "String"
+    },
+    "LdapUserQuery": {
+      "Default": "(&(objectClass=user)(sAMAccountName={login}))",
+      "Description": "Search-expression used to find users in directory",
+      "Type": "String"
+    },
+    "PgsqlVersion": {
+      "AllowedValues": [
+        "9.6.6",
+        "9.6.5",
+        "9.6.3",
+        "9.6.2",
+        "9.6.1",
+        "9.5.10",
+        "9.5.9",
+        "9.5.7",
+        "9.5.6",
+        "9.5.4",
+        "9.5.2"
+      ],
+      "Default": "9.6.3",
+      "Description": "The X.Y.Z version of the PostGreSQL database to deploy.",
+      "Type": "String"
+    },
+    "PipIndexFips": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Default": "https://pypi.org/simple/",
+      "Description": "URL of pip index  that is compatible with FIPS 140-2 requirements.",
+      "Type": "String"
+    },
+    "PipRpm": {
+      "Default": "python2-pip",
+      "Description": "Name of preferred pip RPM.",
+      "Type": "String"
+    },
+    "PluginsBucket":{
+      "AllowedPattern": "^[a-z0-9].*$",
+      "Description": "S3 bucket hosting Sonarqube installation's feature-extending plugins.",
+      "Type": "String"
+    },
+    "PluginFolder": {
+      "AllowedPattern": "^$|^[A-Za-z0-9].*$",
+      "Description": "S3-path containing Sonarqube plugins.",
+      "Type": "String"
+    },
+    "ProvisionUser": {
+      "AllowedPattern": "[a-z0-9]{6,12}+",
+      "ConstraintDescription": "Alphanumeric string between 6 and 12 characters.",
+      "Default": "sonarbuild",
+      "Description": "Default login user account name.",
+      "Type": "String"
+    },
+    "ProxyPrettyName": {
+      "Description": "A short, human-friendly label to assign to the ELB (no capital letters).",
+      "Type": "String"
+    },
+    "PyStache": {
+      "Default": "pystache",
+      "Description": "Name of preferred pystache RPM.",
+      "Type": "String"
+    },
+    "RdsTemplateUri": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's RDS database.",
+      "Type": "String"
+    },
+    "ReportingBucket": {
+      "AllowedPattern": "^arn:.*$|^$",
+      "ConstraintDescription": "String must start with 'arn:' (or be left wholly blank).",
+      "Default": "",
+      "Description": "(Optional) Destination for storing analytics data. Must be provided in ARN format.",
+      "Type": "String"
+    },
+    "RolePrefix": {
+      "Description": "Prefix to apply to IAM role to make things a bit prettier (optional).",
+      "Type": "String"
+    },
+    "ServiceTld": {
+      "Default": "amazonaws.com",
+      "Description": "TLD of the created EFS-endpoint.",
+      "Type": "String"
+    },
+    "SgTemplateUri": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's security groups.",
+      "Type": "String"
+    },
+    "SonarAppSetupUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the Sonarqube setup script.",
+      "Type": "String"
+    },
+    "SonarOsPrepUrl": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URL of the script ready the OS for Sonarqube installation.",
+      "Type": "String"
+    },
+    "SonarqubeRpmName": {
+      "Default": "sonar",
+      "Description": "Name of Sonarqube RPM to install. Include release version if 'other-than-latest' is desired. Example values would be: sonar, sonar-X.Y or sonar-X.Y.Z",
+      "Type": "String",
+      "AllowedPattern": "^sonar$|^sonar-.*$"
+    },
+    "SonarqubeBackupBucket": {
+      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$",
+      "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
+      "Type": "String"
+    },
+    "SonarqubeListenerCert": {
+      "Default": "",
+      "Description": "Name/ID of the ACM-managed SSL Certificate to protect public listener.",
+      "Type": "String"
+    },
+    "SonarqubeServicePort": {
+      "Default": "9000",
+      "Description": "TCP Port number that the Sonarqube host listens to.",
+      "MaxValue": "65535",
+      "Type": "Number"
+    },
+    "SonarqubeYumRepo": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$|^s3://.*$",
+      "Default": "http://downloads.sourceforge.net/project/sonar-pkg/rpm/sonar.repo",
+      "Description": "URL from which to download yum-repository information for SonarQube RPMs.",
+      "Type": "String"
+    },
+    "TargetVPC": {
+      "AllowedPattern": "^vpc-[0-9a-f]*$",
+      "Description": "ID of the VPC to deploy cluster nodes into.",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "ToggleCfnInitUpdate": {
+      "AllowedValues": [
+        "A",
+        "B"
+      ],
+      "Default": "A",
+      "Description": "A/B toggle that forces a change to instance metadata, triggering the cfn-init update sequence",
+      "Type": "String"
+    },
+    "ToggleNewInstances": {
+      "AllowedValues": [
+        "A",
+        "B"
+      ],
+      "Default": "A",
+      "Description": "A/B toggle that forces a change to instance userdata, triggering new instances via the Autoscale update policy",
+      "Type": "String"
+    },
+    "WatchmakerConfig": {
+      "AllowedPattern": "^$|^http[s]?://.*$",
+      "Default": "",
+      "Description": "(Optional) URL to a Watchmaker config file",
+      "Type": "String"
+    },
+    "WatchmakerEnvironment": {
+      "AllowedValues": [
+        "",
+        "dev",
+        "test",
+        "prod"
+      ],
+      "Default": "",
+      "Description": "Environment in which the instance is being deployed",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "AsgRes": {
+      "Properties": {
+        "Parameters": {
+          "AdminPubkeyURL": { "Ref": "AdminPubkeyURL" },
+          "AmiId": { "Ref": "AmiId" },
+          "BackupBucket": {
+            "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketName" ]
+          },
+          "CfnEndpointUrl": {
+            "Fn::Join": [
+              ".",
+              [
+                "https://cloudformation",
+                { "Ref": "AWS::Region" },
+                { "Ref": "ServiceTld" }
+              ]
+            ]
+          },
+          "DesiredCapacity": { "Ref": "DesiredCapacity" },
+          "Domainname": { "Ref": "Domainname" },
+          "ElbArn": {
+            "Fn::GetAtt": [ "ElbRes", "Outputs.SonarqubeAlbTgroupArn" ]
+          },
+          "EpelRepo": { "Ref": "EpelRepo" },
+          "Hostname": { "Ref": "Hostname" },
+          "InstanceRoleName": {
+            "Fn::GetAtt": [ "IamRes", "Outputs.InstanceRole" ]
+          },
+          "InstanceRoleProfile": {
+            "Fn::GetAtt": [ "IamRes", "Outputs.InstanceProfile" ]
+          },
+          "InstanceType": { "Ref": "InstanceType" },
+          "KeyPairName": { "Ref": "KeyPairName" },
+          "LdapAuthType": { "Ref": "LdapAuthType" },
+          "LdapBaseDnGroups": { "Ref": "LdapBaseDnGroups" },
+          "LdapBaseDnUsers": { "Ref": "LdapBaseDnUsers" },
+          "LdapBindDn": { "Ref": "LdapBindDn" },
+          "LdapBindPassword": { "Ref": "LdapBindPassword" },
+          "LdapRealm": { "Ref": "LdapRealm" },
+          "LdapUrl": { "Ref": "LdapUrl" },
+          "LdapUseStartTLS": { "Ref": "LdapUseStartTLS" },
+          "LdapUserQuery": { "Ref": "LdapUserQuery" },
+          "MaxCapacity": "2",
+          "MinCapacity": "0",
+          "NoPublicIp": "true",
+          "NoReboot": "false",
+          "PipIndexFips": { "Ref": "PipIndexFips" },
+          "PipRpm": { "Ref": "PipRpm" },
+          "PluginS3Location": {
+            "Fn::Join": [
+              "",
+              [
+                "s3://",
+                { "Ref": "PluginsBucket" },
+                "/",
+                { "Ref": "PluginFolder" }
+              ]
+            ]
+          },
+          "ProvisionUser": { "Ref": "ProvisionUser" },
+          "PyStache": { "Ref": "PyStache" },
+          "SecurityGroupIds": {
+            "Fn::Join": [
+              ",",
+              [
+                { "Fn::GetAtt": [ "SgRes", "Outputs.AppSg" ] },
+                { "Fn::GetAtt": [ "SgRes", "Outputs.NasSg" ] },
+                { "Fn::GetAtt": [ "SgRes", "Outputs.RdsSg" ] }
+              ]
+            ]
+          },
+          "SonarqubeAppPrepUrl": { "Ref": "SonarAppSetupUrl" },
+          "SonarqubeDbHost": {
+            "Fn::GetAtt": [ "RdsRes", "Outputs.RdsEndpointAddress" ]
+          },
+          "SonarqubeDbInst": { "Ref": "DbInstanceName" },
+          "SonarqubeDbPass": { "Ref": "DbAdminPass" },
+          "SonarqubeDbUser": { "Ref": "DbAdminName" },
+          "SonarqubeOsPrepUrl": { "Ref": "SonarOsPrepUrl" },
+          "SonarqubeRpmName": { "Ref": "SonarqubeRpmName" },
+          "SonarqubeUser": "sonar",
+          "SonarqubeYumRepo": { "Ref": "SonarqubeYumRepo" },
+          "SubnetIds": {
+            "Fn::Join": [
+              ",",
+              { "Ref": "HaSubnets" }
+            ]
+          },
+          "ToggleCfnInitUpdate": { "Ref": "ToggleCfnInitUpdate" },
+          "ToggleNewInstances": { "Ref": "ToggleNewInstances" },
+          "WatchmakerConfig": { "Ref": "WatchmakerConfig" },
+          "WatchmakerEnvironment": { "Ref": "WatchmakerEnvironment" }
+        },
+        "TemplateURL": { "Ref": "Ec2Template" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "BackupBucketRes": {
+      "Properties": {
+        "Parameters": {
+          "BucketInventoryTracking": { "Ref": "BucketInventoryTracking" },
+          "FinalExpirationDays": { "Ref": "FinalExpirationDays" },
+          "ReportingBucket": { "Ref": "ReportingBucket" },
+          "RetainIncompleteDays": "3",
+          "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" },
+          "TierToS3Days": "7"
+        },
+        "TemplateURL": { "Ref": "BucketTemplate" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "ElbRes": {
+      "Properties": {
+        "Parameters": {
+          "BackendTimeout": { "Ref": "BackendTimeout" },
+          "HaSubnets": {
+            "Fn::Join": [
+              ",",
+              { "Ref": "ElbSubnets" }
+            ]
+          },
+          "ProxyPrettyName": { "Ref": "ProxyPrettyName" },
+          "SecurityGroupIds": { 
+            "Fn::Join": [
+              ",",
+              [
+                { "Fn::GetAtt": [ "SgRes", "Outputs.AppSg" ] }
+              ]
+            ]
+          },
+          "SonarqubeInstanceId": "",
+          "SonarqubeListenerCert": { "Ref": "SonarqubeListenerCert" },
+          "SonarqubeListenPort": "443",
+          "SonarqubeServicePort": { "Ref": "SonarqubeServicePort" },
+          "TargetVPC": { "Ref": "TargetVPC" }
+        },
+        "TemplateURL": { "Ref": "ElbTemplate" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "IamRes": {
+      "Properties": {
+        "Parameters": {
+          "BackupBucketArn": {
+            "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketArn" ]
+          },
+          "PluginsBucket": { "Ref": "PluginsBucket" },
+          "RolePrefix": { "Ref": "RolePrefix" },
+          "ServiceTld": { "Ref": "ServiceTld" }
+        },
+        "TemplateURL": { "Ref": "IamTemplate" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "RdsRes": {
+      "Properties": {
+        "Parameters": {
+          "DbAdminName": { "Ref": "DbAdminName" },
+          "DbAdminPass": { "Ref": "DbAdminPass" },
+          "DbDataSize": { "Ref": "DbDataSize" },
+          "DbInstanceName": { "Ref": "DbInstanceName" },
+          "DbInstanceType": { "Ref": "DbInstanceType" },
+          "DbIsMultiAz": "true",
+          "DbNodeName": { "Ref": "DbNodeName" },
+          "DbSecurityGroup": { "Fn::GetAtt": [ "SgRes", "Outputs.RdsSg" ] },
+          "DbSnapshotId": { "Ref": "DbSnapshotId" },
+          "DbSubnets": {
+            "Fn::Join": [
+              ",",
+              { "Ref": "HaSubnets" }
+            ]
+          },
+          "PgsqlVersion": { "Ref": "PgsqlVersion" },
+          "TargetVPC": { "Ref": "TargetVPC" }
+        },
+        "TemplateURL": { "Ref": "RdsTemplateUri" }
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "SgRes": {
+      "Properties": {
+        "Parameters": {
+          "TargetVPC": { "Ref": "TargetVPC" }
+        },
+        "TemplateURL": { "Ref": "SgTemplateUri" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    }
+  }
+}
