@@ -1,6 +1,6 @@
 ### Standalone Sonarqube Instance(s)
 
-The [make_sonarqube_EC2-node.tmplt.json](/Templates/make_sonarqube_EC2-node.tmplt.json) template &mdash; along with deployment-automation helper-scripts &mdash; creates an EC2 instance that hosts the Java-based Sonarqube web service. The resultant EC2 instance contains a fully-configured Sonarqube service. The service will have appropriate connector-definitions for:
+The [make_sonarqube_EC2-instance.tmplt.json](/Templates/make_sonarqube_EC2-instance.tmplt.json) template &mdash; along with deployment-automation helper-scripts &mdash; creates an EC2 instance that hosts the Java-based Sonarqube web service. The resultant EC2 instance contains a fully-configured Sonarqube service. The service will have appropriate connector-definitions for:
 
 * Working with an external, PGSQL-based configuration-database
 * Working behind an SSL-terminating, Internet-facing HTTP proxy

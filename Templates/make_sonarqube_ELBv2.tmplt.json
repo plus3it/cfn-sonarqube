@@ -1,6 +1,11 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": {
+    "SetInstanceId": {
+      "Fn::Not": [
+        { "Fn::Equals": [ { "Ref": "SonarqubeInstanceId" }, "" ] }
+      ]
+    },
     "SetPrettyName": {
       "Fn::Not": [
         { "Fn::Equals": [ { "Ref": "ProxyPrettyName" }, "" ] }
@@ -33,6 +38,28 @@
         "Name" : { "Fn::Sub": "${AWS::StackName}-AlbDnsName" }
       },
       "Value": { "Fn::GetAtt": [ "SonarqubePubAlbLoadBalancer", "DNSName" ] }
+    },
+    "SonarqubeAlbTgroupArn": {
+      "Description": "ARN of the Sonarqube ALB's TargetGroup",
+      "Export": {
+        "Name" : { "Fn::Sub": "${AWS::StackName}-AlbTargArn" }
+      },
+      "Value": { "Ref": "SonarqubePubAlbTgroup" }
+    },
+    "SonarqubeRawAlbUrl": {
+      "Description": "Sonarqube front-end's IP address",
+      "Export": {
+        "Name" : { "Fn::Sub": "${AWS::StackName}-AlbRawUrl" }
+      },
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            { "Fn::GetAtt": [ "SonarqubePubAlbLoadBalancer", "DNSName" ] }
+          ]
+        ]
+      }
     }
   },
   "Parameters": {
@@ -167,12 +194,18 @@
         },
         "Port": { "Ref": "SonarqubeServicePort" },
         "Protocol": "HTTP",
-        "Targets": [
-          {
-            "Id": { "Ref": "SonarqubeInstanceId" },
-            "Port": { "Ref": "SonarqubeServicePort" }
-          }
-        ],
+        "Targets": {
+          "Fn::If": [
+            "SetInstanceId",
+            [
+              {
+                "Id": { "Ref": "SonarqubeInstanceId" },
+                "Port": { "Ref": "SonarqubeServicePort" }
+              }
+            ],
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
         "UnhealthyThresholdCount": "2",
         "VpcId": { "Ref": "TargetVPC" }
       },
