@@ -155,6 +155,10 @@
       "Description": "Suffix for Sonarqube's hostname and DNS record",
       "Type": "String"
     },
+    "ElbArn": {
+      "Description": "ARN of the ELBv2 TargetGroup to attach scaling-group to.",
+      "Type": "String"
+    },
     "EpelRepo": {
       "AllowedPattern": "^[a-z][a-z0-9-]*$",
       "ConstraintDescription": "An alphanumeric string that represents the EPEL yum repo's label.",
@@ -453,6 +457,7 @@
             }
           }
         ],
+        "TargetGroupARNs": [ { "Ref" : "ElbArn" } ],
         "VPCZoneIdentifier": { "Ref": "SubnetIds" }
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",

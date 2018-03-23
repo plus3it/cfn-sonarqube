@@ -597,7 +597,6 @@
           "LdapUserQuery": { "Ref": "LdapUserQuery" },
           "MaxCapacity": "2",
           "MinCapacity": "0",
-          "NoPublicIp": "true",
           "NoReboot": "false",
           "PipIndexFips": { "Ref": "PipIndexFips" },
           "PipRpm": { "Ref": "PipRpm" },
