@@ -973,12 +973,7 @@
           "watchmaker-install": {
             "commands": {
               "10-watchmaker-install": {
-                "command": "bash -xe /etc/cfn/scripts/watchmaker-install.sh",
-                "env": {
-                  "AWS_CA_BUNDLE": "/etc/pki/tls/certs/ca-bundle.crt",
-                  "AWS_DEFAULT_REGION": { "Ref": "AWS::Region" },
-                  "REQUESTS_CA_BUNDLE": "/etc/pki/tls/certs/ca-bundle.crt"
-                }
+                "command": "bash -xe /etc/cfn/scripts/watchmaker-install.sh"
               }
             }
           },
