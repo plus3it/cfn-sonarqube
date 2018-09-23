@@ -41,7 +41,7 @@ pipeline {
         string(name: 'PluginsBucket', description: 'S3 Bucket hosting Sonarqube plugins')
         string(name: 'RolePrefix', description: 'Optional Prefix to apply to IAM role')
         string(name: 'ServiceTld', defaultValue: 'amazonaws.com', description: 'TLD of the IAMable service-name')
-        string(name: 'TargetVPC', description: 'ID of the VPC to deploy cluster nodes into')p
+        string(name: 'TargetVPC', description: 'ID of the VPC to deploy cluster nodes into')
     }
 
     stages {
