@@ -68,7 +68,7 @@ pipeline {
         string(name: 'SonarqubeDbUser', description: 'Name of the Sonarqube master database-user')
         string(name: 'SonarqubeOsPrepUrl', description: 'URL of the script ready the OS for Sonarqube installation')
         string(name: 'SonarqubeRpmName', defaultValue: 'sonar', description: 'Name of Sonarqube RPM to install. Include release version if other-than-latest is desired. Example values would be: sonar, sonar-X.Y or sonar-X.Y.Z')
-        string(name: 'SonarqubeUser', defaultValue: 'sonarqube' description: 'Userid the Sonarqube service runs under')
+        string(name: 'SonarqubeUser', defaultValue: 'sonarqube', description: 'Userid the Sonarqube service runs under')
         string(name: 'SonarqubeYumRepo', defaultValue: 'http://downloads.sourceforge.net/project/sonar-pkg/rpm/sonar.repo', description: 'URL from which to download yum-repository information for SonarQube RPMs')
         string(name: 'SubnetIds', description: 'List of subnets to associate to the Autoscaling Group')
         string(name: 'ToggleCfnInitUpdate', defaultValue: 'A', description: 'A/B toggle that forces a change to instance metadata, triggering the cfn-init update sequence')
