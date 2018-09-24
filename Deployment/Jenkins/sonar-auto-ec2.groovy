@@ -86,193 +86,193 @@ pipeline {
                     url: "${GitProjUrl}"
                 writeFile file: 'sonar.ec2.auto.parms.json',
                     text: /
-                    [
-                      {
-                        "ParameterKey": "AdminPubkeyURL",
-                        "ParameterValue": "${env.AdminPubkeyURL}"
-                      },
-                      {
-                        "ParameterKey": "AmiId",
-                        "ParameterValue": "${env.AmiId}"
-                      },
-                      {
-                        "ParameterKey": "BackupBucket",
-                        "ParameterValue": "${env.BackupBucket}"
-                      },
-                      {
-                        "ParameterKey": "CfnEndpointUrl",
-                        "ParameterValue": "${env.CfnEndpointUrl}"
-                      },
-                      {
-                        "ParameterKey": "DesiredCapacity",
-                        "ParameterValue": "${env.DesiredCapacity}"
-                      },
-                      {
-                        "ParameterKey": "Domainname",
-                        "ParameterValue": "${env.Domainname}"
-                      },
-                      {
-                        "ParameterKey": "ElbArn",
-                        "ParameterValue": "${env.ElbArn}"
-                      },
-                      {
-                        "ParameterKey": "EpelRepo",
-                        "ParameterValue": "${env.EpelRepo}"
-                      },
-                      {
-                        "ParameterKey": "Hostname",
-                        "ParameterValue": "${env.Hostname}"
-                      },
-                      {
-                        "ParameterKey": "InstanceRoleName",
-                        "ParameterValue": "${env.InstanceRoleName}"
-                      },
-                      {
-                        "ParameterKey": "InstanceRoleProfile",
-                        "ParameterValue": "${env.InstanceRoleProfile}"
-                      },
-                      {
-                        "ParameterKey": "InstanceType",
-                        "ParameterValue": "${env.InstanceType}"
-                      },
-                      {
-                        "ParameterKey": "KeyPairName",
-                        "ParameterValue": "${env.KeyPairName}"
-                      },
-                      {
-                        "ParameterKey": "LdapAuthType",
-                        "ParameterValue": "${env.LdapAuthType}"
-                      },
-                      {
-                        "ParameterKey": "LdapBaseDnGroups",
-                        "ParameterValue": "${env.LdapBaseDnGroups}"
-                      },
-                      {
-                        "ParameterKey": "LdapBaseDnUsers",
-                        "ParameterValue": "${env.LdapBaseDnUsers}"
-                      },
-                      {
-                        "ParameterKey": "LdapBindDn",
-                        "ParameterValue": "${env.LdapBindDn}"
-                      },
-                      {
-                        "ParameterKey": "LdapBindPassword",
-                        "ParameterValue": "${env.LdapBindPassword}"
-                      },
-                      {
-                        "ParameterKey": "LdapRealm",
-                        "ParameterValue": "${env.LdapRealm}"
-                      },
-                      {
-                        "ParameterKey": "LdapUrl",
-                        "ParameterValue": "${env.LdapUrl}"
-                      },
-                      {
-                        "ParameterKey": "LdapUseStartTLS",
-                        "ParameterValue": "${env.LdapUseStartTLS}"
-                      },
-                      {
-                        "ParameterKey": "LdapUserQuery",
-                        "ParameterValue": "${env.LdapUserQuery}"
-                      },
-                      {
-                        "ParameterKey": "MaxCapacity",
-                        "ParameterValue": "${env.MaxCapacity}"
-                      },
-                      {
-                        "ParameterKey": "MinCapacity",
-                        "ParameterValue": "${env.MinCapacity}"
-                      },
-                      {
-                        "ParameterKey": "NoReboot",
-                        "ParameterValue": "${env.NoReboot}"
-                      },
-                      {
-                        "ParameterKey": "NoUpdates",
-                        "ParameterValue": "${env.NoUpdates}"
-                      },
-                      {
-                        "ParameterKey": "PipIndexFips",
-                        "ParameterValue": "${env.PipIndexFips}"
-                      },
-                      {
-                        "ParameterKey": "PipRpm",
-                        "ParameterValue": "${env.PipRpm}"
-                      },
-                      {
-                        "ParameterKey": "PluginsS3Location",
-                        "ParameterValue": "${env.PluginsS3Location}"
-                      },
-                      {
-                        "ParameterKey": "ProvisionUser",
-                        "ParameterValue": "${env.ProvisionUser}"
-                      },
-                      {
-                        "ParameterKey": "PyStache",
-                        "ParameterValue": "${env.PyStache}"
-                      },
-                      {
-                        "ParameterKey": "SecurityGroupIds",
-                        "ParameterValue": "${env.SecurityGroupIds}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeAppPrepUrl",
-                        "ParameterValue": "${env.SonarqubeAppPrepUrl}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeDbHost",
-                        "ParameterValue": "${env.SonarqubeDbHost}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeDbInst",
-                        "ParameterValue": "${env.SonarqubeDbInst}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeDbPass",
-                        "ParameterValue": "${env.SonarqubeDbPass}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeDbUser",
-                        "ParameterValue": "${env.SonarqubeDbUser}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeOsPrepUrl",
-                        "ParameterValue": "${env.SonarqubeOsPrepUrl}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeRpmName",
-                        "ParameterValue": "${env.SonarqubeRpmName}"
-                      },
-                      {
-                      "ParameterKey": "SonarqubeUser",
-                      "ParameterValue": "${env.SonarqubeUser}"
-                      },
-                      {
-                      "ParameterKey": "SonarqubeYumRepo",
-                      "ParameterValue": "${env.SonarqubeYumRepo}"
-                      },
-                      {
-                        "ParameterKey": "SubnetIds",
-                        "ParameterValue": "${env.SubnetIds}"
-                      },
-                      {
-                      "ParameterKey": "ToggleCfnInitUpdate",
-                      "ParameterValue": "${env.ToggleCfnInitUpdate}"
-                      },
-                      {
-                      "ParameterKey": "ToggleNewInstances",
-                      "ParameterValue": "${env.ToggleNewInstances}"
-                      },
-                      {
-                        "ParameterKey": "WatchmakerConfig",
-                        "ParameterValue": "${env.WatchmakerConfig}"
-                      },
-                      {
-                      "ParameterKey": "WatchmakerEnvironment",
-                      "ParameterValue": "${env.WatchmakerEnvironment}"
-                      }
-                    ]
-                  /
+                        [
+                            {
+                                "ParameterKey": "AdminPubkeyURL",
+                                "ParameterValue": "${env.AdminPubkeyURL}"
+                            },
+                            {
+                                "ParameterKey": "AmiId",
+                                "ParameterValue": "${env.AmiId}"
+                            },
+                            {
+                                "ParameterKey": "BackupBucket",
+                                "ParameterValue": "${env.BackupBucket}"
+                            },
+                            {
+                                "ParameterKey": "CfnEndpointUrl",
+                                "ParameterValue": "${env.CfnEndpointUrl}"
+                            },
+                            {
+                                "ParameterKey": "DesiredCapacity",
+                                "ParameterValue": "${env.DesiredCapacity}"
+                            },
+                            {
+                                "ParameterKey": "Domainname",
+                                "ParameterValue": "${env.Domainname}"
+                            },
+                            {
+                                "ParameterKey": "ElbArn",
+                                "ParameterValue": "${env.ElbArn}"
+                            },
+                            {
+                                "ParameterKey": "EpelRepo",
+                                "ParameterValue": "${env.EpelRepo}"
+                            },
+                            {
+                                "ParameterKey": "Hostname",
+                                "ParameterValue": "${env.Hostname}"
+                            },
+                            {
+                                "ParameterKey": "InstanceRoleName",
+                                "ParameterValue": "${env.InstanceRoleName}"
+                            },
+                            {
+                                "ParameterKey": "InstanceRoleProfile",
+                                "ParameterValue": "${env.InstanceRoleProfile}"
+                            },
+                            {
+                                "ParameterKey": "InstanceType",
+                                "ParameterValue": "${env.InstanceType}"
+                            },
+                            {
+                                "ParameterKey": "KeyPairName",
+                                "ParameterValue": "${env.KeyPairName}"
+                            },
+                            {
+                                "ParameterKey": "LdapAuthType",
+                                "ParameterValue": "${env.LdapAuthType}"
+                            },
+                            {
+                                "ParameterKey": "LdapBaseDnGroups",
+                                "ParameterValue": "${env.LdapBaseDnGroups}"
+                            },
+                            {
+                                "ParameterKey": "LdapBaseDnUsers",
+                                "ParameterValue": "${env.LdapBaseDnUsers}"
+                            },
+                            {
+                                "ParameterKey": "LdapBindDn",
+                                "ParameterValue": "${env.LdapBindDn}"
+                            },
+                            {
+                                "ParameterKey": "LdapBindPassword",
+                                "ParameterValue": "${env.LdapBindPassword}"
+                            },
+                            {
+                                "ParameterKey": "LdapRealm",
+                                "ParameterValue": "${env.LdapRealm}"
+                            },
+                            {
+                                "ParameterKey": "LdapUrl",
+                                "ParameterValue": "${env.LdapUrl}"
+                            },
+                            {
+                                "ParameterKey": "LdapUseStartTLS",
+                                "ParameterValue": "${env.LdapUseStartTLS}"
+                            },
+                            {
+                                "ParameterKey": "LdapUserQuery",
+                                "ParameterValue": "${env.LdapUserQuery}"
+                            },
+                            {
+                                "ParameterKey": "MaxCapacity",
+                                "ParameterValue": "${env.MaxCapacity}"
+                            },
+                            {
+                                "ParameterKey": "MinCapacity",
+                                "ParameterValue": "${env.MinCapacity}"
+                            },
+                            {
+                                "ParameterKey": "NoReboot",
+                                "ParameterValue": "${env.NoReboot}"
+                            },
+                            {
+                                "ParameterKey": "NoUpdates",
+                                "ParameterValue": "${env.NoUpdates}"
+                            },
+                            {
+                                "ParameterKey": "PipIndexFips",
+                                "ParameterValue": "${env.PipIndexFips}"
+                            },
+                            {
+                                "ParameterKey": "PipRpm",
+                                "ParameterValue": "${env.PipRpm}"
+                            },
+                            {
+                                "ParameterKey": "PluginsS3Location",
+                                "ParameterValue": "${env.PluginsS3Location}"
+                            },
+                            {
+                                "ParameterKey": "ProvisionUser",
+                                "ParameterValue": "${env.ProvisionUser}"
+                            },
+                            {
+                                "ParameterKey": "PyStache",
+                                "ParameterValue": "${env.PyStache}"
+                            },
+                            {
+                                "ParameterKey": "SecurityGroupIds",
+                                "ParameterValue": "${env.SecurityGroupIds}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeAppPrepUrl",
+                                "ParameterValue": "${env.SonarqubeAppPrepUrl}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeDbHost",
+                                "ParameterValue": "${env.SonarqubeDbHost}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeDbInst",
+                                "ParameterValue": "${env.SonarqubeDbInst}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeDbPass",
+                                "ParameterValue": "${env.SonarqubeDbPass}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeDbUser",
+                                "ParameterValue": "${env.SonarqubeDbUser}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeOsPrepUrl",
+                                "ParameterValue": "${env.SonarqubeOsPrepUrl}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeRpmName",
+                                "ParameterValue": "${env.SonarqubeRpmName}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeUser",
+                                "ParameterValue": "${env.SonarqubeUser}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeYumRepo",
+                                "ParameterValue": "${env.SonarqubeYumRepo}"
+                            },
+                            {
+                                "ParameterKey": "SubnetIds",
+                                "ParameterValue": "${env.SubnetIds}"
+                            },
+                            {
+                                "ParameterKey": "ToggleCfnInitUpdate",
+                                "ParameterValue": "${env.ToggleCfnInitUpdate}"
+                            },
+                            {
+                                "ParameterKey": "ToggleNewInstances",
+                                "ParameterValue": "${env.ToggleNewInstances}"
+                            },
+                            {
+                                "ParameterKey": "WatchmakerConfig",
+                                "ParameterValue": "${env.WatchmakerConfig}"
+                            },
+                            {
+                                "ParameterKey": "WatchmakerEnvironment",
+                                "ParameterValue": "${env.WatchmakerEnvironment}"
+                            }
+                        ]
+                    /
                 }
             }
         stage ('Prepare AWS Environment') {
