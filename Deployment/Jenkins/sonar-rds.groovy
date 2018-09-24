@@ -55,79 +55,79 @@ pipeline {
                     url: "${GitProjUrl}"
                 writeFile file: 'sonar.rds.parms.json',
                     text: /
-                    [
-                      {
-                        "ParameterKey": "AdminPubkeyURL",
-                        "ParameterValue": "${env.AdminPubkeyURL}"
-                      },
-                      {
-                        "ParameterKey": "DbAdminName",
-                        "ParameterValue": "${env.DbAdminName}"
-                      },
-                      {
-                        "ParameterKey": "DbAdminPass",
-                        "ParameterValue": "${env.DbAdminPass}"
-                      },
-                      {
-                        "ParameterKey": "DbDataSize",
-                        "ParameterValue": "${env.DbDataSize}"
-                      },
-                      {
-                        "ParameterKey": "DbIsMultiAz",
-                        "ParameterValue": "${env.DbIsMultiAz}"
-                      },
-                      {
-                        "ParameterKey": "DbNodeName",
-                        "ParameterValue": "${env.DbNodeName}"
-                      },
-                      {
-                        "ParameterKey": "DbInstanceName",
-                        "ParameterValue": "${env.DbInstanceName}"
-                      },
-                      {
-                        "ParameterKey": "DbInstanceType",
-                        "ParameterValue": "${env.DbInstanceType}"
-                      },
-                      {
-                        "ParameterKey": "DbInstanceName",
-                        "ParameterValue": "${env.DbInstanceName}"
-                      },
-                      {
-                        "ParameterKey": "DbInstanceType",
-                        "ParameterValue": "${env.DbInstanceType}"
-                      },
-                      {
-                        "ParameterKey": "DbSecurityGroup",
-                        "ParameterValue": "${env.DbSecurityGroup}"
-                      },
-                      {
-                        "ParameterKey": "DbSnapshotId",
-                        "ParameterValue": "${env.DbSnapshotId}"
-                      },
-                      {
-                        "ParameterKey": "DbStorageType",
-                        "ParameterValue": "${env.DbStorageType}"
-                      },
-                      {
-                        "ParameterKey": "DbStorageIops",
-                        "ParameterValue": "${env.DbStorageIops}"
-                      },
-                      {
-                        "ParameterKey": "DbSubnets",
-                        "ParameterValue": "${env.DbSubnets}"
-                      },
-                      {
-                        "ParameterKey": "PgsqlVersion",
-                        "ParameterValue": "${env.PgsqlVersion}"
-                      },
-                      {
-                      "ParameterKey": "TargetVPC",
-                      "ParameterValue": "${env.TargetVPC}"
-                      }
-                    ]
-                  /
-                }
+                        [
+                            {
+                                "ParameterKey": "AdminPubkeyURL",
+                                "ParameterValue": "${env.AdminPubkeyURL}"
+                            },
+                            {
+                                "ParameterKey": "DbAdminName",
+                                "ParameterValue": "${env.DbAdminName}"
+                            },
+                            {
+                                "ParameterKey": "DbAdminPass",
+                                "ParameterValue": "${env.DbAdminPass}"
+                            },
+                            {
+                                "ParameterKey": "DbDataSize",
+                                "ParameterValue": "${env.DbDataSize}"
+                            },
+                            {
+                                "ParameterKey": "DbIsMultiAz",
+                                "ParameterValue": "${env.DbIsMultiAz}"
+                            },
+                            {
+                                "ParameterKey": "DbNodeName",
+                                "ParameterValue": "${env.DbNodeName}"
+                            },
+                            {
+                                "ParameterKey": "DbInstanceName",
+                                "ParameterValue": "${env.DbInstanceName}"
+                            },
+                            {
+                                "ParameterKey": "DbInstanceType",
+                                "ParameterValue": "${env.DbInstanceType}"
+                            },
+                            {
+                                "ParameterKey": "DbInstanceName",
+                                "ParameterValue": "${env.DbInstanceName}"
+                            },
+                            {
+                                "ParameterKey": "DbInstanceType",
+                                "ParameterValue": "${env.DbInstanceType}"
+                            },
+                            {
+                                "ParameterKey": "DbSecurityGroup",
+                                "ParameterValue": "${env.DbSecurityGroup}"
+                            },
+                            {
+                                "ParameterKey": "DbSnapshotId",
+                                "ParameterValue": "${env.DbSnapshotId}"
+                            },
+                            {
+                                "ParameterKey": "DbStorageType",
+                                "ParameterValue": "${env.DbStorageType}"
+                            },
+                            {
+                                "ParameterKey": "DbStorageIops",
+                                "ParameterValue": "${env.DbStorageIops}"
+                            },
+                            {
+                                "ParameterKey": "DbSubnets",
+                                "ParameterValue": "${env.DbSubnets}"
+                            },
+                            {
+                                "ParameterKey": "PgsqlVersion",
+                                "ParameterValue": "${env.PgsqlVersion}"
+                            },
+                            {
+                                "ParameterKey": "TargetVPC",
+                                "ParameterValue": "${env.TargetVPC}"
+                            }
+                        ]
+                    /
             }
+        }
         stage ('Prepare AWS Environment') {
             steps {
                 withCredentials(
