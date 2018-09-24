@@ -49,53 +49,52 @@ stages {
                 url: "${GitProjUrl}"
             writeFile file: 'sonar.elbv2.parms.json',
                 text: /
-                  [
-                      {
-                        "ParameterKey": "BackendTimeout",
-                        "ParameterValue": "${env.BackendTimeout}"
-                      },
-                      {
-                        "ParameterKey": "HaSubnets",
-                        "ParameterValue": "${env.HaSubnets}"
-                      },
-                      {
-                        "ParameterKey": "ProxyPrettyName",
-                        "ParameterValue": "${env.ProxyPrettyName}"
-                      },
-                      {
-                        "ParameterKey": "SecurityGroupIds",
-                        "ParameterValue": "${env.SecurityGroupIds}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeInstanceId",
-                        "ParameterValue": "${env.SonarqubeInstanceId}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeListenerCert",
-                        "ParameterValue": "${env.SonarqubeListenerCert}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeListenPort",
-                        "ParameterValue": "${env.SonarqubeListenPort}"
-                      },
-                      {
-                        "ParameterKey": "SonarqubeServicePort",
-                        "ParameterValue": "${env.SonarqubeServicePort}"
-                      },
-                      {
-                        "ParameterKey": "TargetVPC",
-                        "ParameterValue": "${env.TargetVPC}"
-                      }
-                  ]
-               /
+                    [
+                        {
+                            "ParameterKey": "BackendTimeout",
+                            "ParameterValue": "${env.BackendTimeout}"
+                        },
+                        {
+                            "ParameterKey": "HaSubnets",
+                            "ParameterValue": "${env.HaSubnets}"
+                        },
+                        {
+                            "ParameterKey": "ProxyPrettyName",
+                            "ParameterValue": "${env.ProxyPrettyName}"
+                        },
+                        {
+                            "ParameterKey": "SecurityGroupIds",
+                            "ParameterValue": "${env.SecurityGroupIds}"
+                        },
+                        {
+                            "ParameterKey": "SonarqubeInstanceId",
+                            "ParameterValue": "${env.SonarqubeInstanceId}"
+                        },
+                        {
+                            "ParameterKey": "SonarqubeListenerCert",
+                            "ParameterValue": "${env.SonarqubeListenerCert}"
+                        },
+                        {
+                            "ParameterKey": "SonarqubeListenPort",
+                            "ParameterValue": "${env.SonarqubeListenPort}"
+                        },
+                        {
+                            "ParameterKey": "SonarqubeServicePort",
+                            "ParameterValue": "${env.SonarqubeServicePort}"
+                        },
+                        {
+                            "ParameterKey": "TargetVPC",
+                            "ParameterValue": "${env.TargetVPC}"
+                        }
+                    ]
+                /
             }
         }
     stage ('Prepare AWS Environment') {
         steps {
             withCredentials(
                 [
-                    [$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: "${AwsCred}", secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
-                    sshUserPrivateKey(credentialsId: "${GitCred}", keyFileVariable: 'SSH_KEY_FILE', passphraseVariable: 'SSH_KEY_PASS', usernameVariable: 'SSH_KEY_USER')
+                    [$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: "${AwsCred}", secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']
                 ]
             ) {
                 sh '''#!/bin/bash
@@ -111,8 +110,7 @@ stages {
         steps {
             withCredentials(
                 [
-                    [$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: "${AwsCred}", secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
-                    sshUserPrivateKey(credentialsId: "${GitCred}", keyFileVariable: 'SSH_KEY_FILE', passphraseVariable: 'SSH_KEY_PASS', usernameVariable: 'SSH_KEY_USER')
+                    [$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: "${AwsCred}", secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']
                 ]
             ) {
                 sh '''#!/bin/bash
