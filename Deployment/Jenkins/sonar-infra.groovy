@@ -53,69 +53,69 @@ pipeline {
                     url: "${GitProjUrl}"
                 writeFile file: 'sonar-service-infra.parms.json',
                     text: /
-                    [
-                        {
-                            "ParameterKey": "BucketTemplate",
-                            "ParameterValue": "${env.BucketTemplate}"
-                        },
-                        {
-                            "ParameterKey": "IamRoleTemplate",
-                            "ParameterValue": "${env.IamRoleTemplate}"
-                        },
-                        {
-                            "ParameterKey": "SecurityGroupTemplate",
-                            "ParameterValue": "${env.SecurityGroupTemplate}"
-                        },
-                        {
-                            "ParameterKey": "BucketInventoryTracking",
-                            "ParameterValue": "${env.BucketInventoryTracking}"
-                        },
-                        {
-                            "ParameterKey": "JenkinsBackupBucket",
-                            "ParameterValue": "${env.JenkinsBackupBucket}"
-                        },
-                        {
-                            "ParameterKey": "FinalExpirationDays",
-                            "ParameterValue": "${env.FinalExpirationDays}"
-                        },
-                        {
-                            "ParameterKey": "ReportingBucket",
-                            "ParameterValue": "${env.ReportingBucket}"
-                        },
-                        {
-                            "ParameterKey": "RetainIncompleteDays",
-                            "ParameterValue": "${env.RetainIncompleteDays}"
-                        },
-                        {
-                            "ParameterKey": "SonarqubeBackupBucket",
-                            "ParameterValue": "${env.SonarqubeBackupBucket}"
-                        },
-                        {
-                            "ParameterKey": "TierToS3Days",
-                            "ParameterValue": "${env.TierToS3Days}"
-                        },
-                        {
-                            "ParameterKey": "BackupBucketArn",
-                            "ParameterValue": "${env.BackupBucketArn}"
-                        },
-                        {
-                            "ParameterKey": "PluginsBucket",
-                            "ParameterValue": "${env.PluginsBucket}"
-                        },
-                        {
-                            "ParameterKey": "RolePrefix",
-                            "ParameterValue": "${env.RolePrefix}"
-                        },
-                        {
-                            "ParameterKey": "ServiceTld",
-                            "ParameterValue": "${env.ServiceTld}"
-                        },
-                        {
-                            "ParameterKey": "TargetVPC",
-                            "ParameterValue": "${env.TargetVPC}"
-                        }
-                    ]
-                   /
+                        [
+                            {
+                                "ParameterKey": "BucketTemplate",
+                                "ParameterValue": "${env.BucketTemplate}"
+                            },
+                            {
+                                "ParameterKey": "IamRoleTemplate",
+                                "ParameterValue": "${env.IamRoleTemplate}"
+                            },
+                            {
+                                "ParameterKey": "SecurityGroupTemplate",
+                                "ParameterValue": "${env.SecurityGroupTemplate}"
+                            },
+                            {
+                                "ParameterKey": "BucketInventoryTracking",
+                                "ParameterValue": "${env.BucketInventoryTracking}"
+                            },
+                            {
+                                "ParameterKey": "JenkinsBackupBucket",
+                                "ParameterValue": "${env.JenkinsBackupBucket}"
+                            },
+                            {
+                                "ParameterKey": "FinalExpirationDays",
+                                "ParameterValue": "${env.FinalExpirationDays}"
+                            },
+                            {
+                                "ParameterKey": "ReportingBucket",
+                                "ParameterValue": "${env.ReportingBucket}"
+                            },
+                            {
+                                "ParameterKey": "RetainIncompleteDays",
+                                "ParameterValue": "${env.RetainIncompleteDays}"
+                            },
+                            {
+                                "ParameterKey": "SonarqubeBackupBucket",
+                                "ParameterValue": "${env.SonarqubeBackupBucket}"
+                            },
+                            {
+                                "ParameterKey": "TierToS3Days",
+                                "ParameterValue": "${env.TierToS3Days}"
+                            },
+                            {
+                                "ParameterKey": "BackupBucketArn",
+                                "ParameterValue": "${env.BackupBucketArn}"
+                            },
+                            {
+                                "ParameterKey": "PluginsBucket",
+                                "ParameterValue": "${env.PluginsBucket}"
+                            },
+                            {
+                                "ParameterKey": "RolePrefix",
+                                "ParameterValue": "${env.RolePrefix}"
+                            },
+                            {
+                                "ParameterKey": "ServiceTld",
+                                "ParameterValue": "${env.ServiceTld}"
+                            },
+                            {
+                                "ParameterKey": "TargetVPC",
+                                "ParameterValue": "${env.TargetVPC}"
+                            }
+                        ]
+                    /
                 }
             }
         stage ('Prepare AWS Environment') {
