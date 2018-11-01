@@ -28,7 +28,7 @@ pipeline {
         string(name: 'GitProjUrl', description: 'SSH URL from which to download the Jenkins git project')
         string(name: 'GitProjBranch', description: 'Project-branch to use from the Jenkins git project')
         string(name: 'CfnStackRoot', description: 'Unique token to prepend to all stack-element names')
-        string(name: 'TemplateUrl', description: 'S3-hosted URL for the EC2 template file')
+        string(name: 'TemplateUrl', description: 'S3-hosted URL for the EC2 autoscale template file')
         string(name: 'AdminPubkeyURL', description: 'URL the file containing the admin users SSH public keys')
         string(name: 'AmiId', description: 'ID of the AMI to launch')
         string(name: 'BackupBucket', description: 'Name of S3 bucket used for Sonarqube backup tasks')
@@ -57,7 +57,7 @@ pipeline {
         string(name: 'NoUpdates', defaultValue: 'false', description: 'Controls whether to run yum update during a stack update - on the initial instance launch, Watchmaker _always_ installs updates')
         string(name: 'PipIndexFips', defaultValue: 'https://pypi.org/simple/', description: 'URL of pip index that is compatible with FIPS 140-2 requirements')
         string(name: 'PipRpm', defaultValue: 'python2-pip', description: 'Name of preferred pip RPM')
-        string(name: 'PluginsS3Location', description: 'S3-path containing Sonarqube plugins')
+        string(name: 'PluginS3Location', description: 'S3-path containing Sonarqube plugins')
         string(name: 'ProvisionUser', defaultValue: 'builder', description: 'Default login user account name')
         string(name: 'PyStache', defaultValue: 'pystache', description: 'Name of preferred pystache RPM')
         string(name: 'SecurityGroupIds', description: 'List of security groups to apply to the instance')
@@ -200,8 +200,8 @@ pipeline {
                                 "ParameterValue": "${env.PipRpm}"
                             },
                             {
-                                "ParameterKey": "PluginsS3Location",
-                                "ParameterValue": "${env.PluginsS3Location}"
+                                "ParameterKey": "PluginS3Location",
+                                "ParameterValue": "${env.PluginS3Location}"
                             },
                             {
                                 "ParameterKey": "ProvisionUser",
@@ -283,10 +283,10 @@ pipeline {
                     ]
                 ) {
                     sh '''#!/bin/bash
-                        echo "Attempting to delete any active ${CfnStackRoot}-ParAuto-${BUILD_NUMBER} stacks... "
-                        aws --region "${AwsRegion}" cloudformation delete-stack --stack-name "${CfnStackRoot}-ParAuto-${BUILD_NUMBER}"
+                        echo "Attempting to delete any active ${CfnStackRoot}-Ec2Auto stacks... "
+                        aws --region "${AwsRegion}" cloudformation delete-stack --stack-name "${CfnStackRoot}-Ec2Auto"
 
-                        aws cloudformation wait stack-delete-complete --stack-name ${CfnStackRoot}-ParAuto-${BUILD_NUMBER} --region ${AwsRegion}
+                        aws cloudformation wait stack-delete-complete --stack-name ${CfnStackRoot}-Ec2Auto --region ${AwsRegion}
                     '''
                 }
             }
@@ -299,16 +299,16 @@ pipeline {
                     ]
                 ) {
                     sh '''#!/bin/bash
-                        echo "Attempting to create stack ${CfnStackRoot}-ParAuto-${BUILD_NUMBER}..."
-                        aws --region "${AwsRegion}" cloudformation create-stack --stack-name "${CfnStackRoot}-ParAuto-${BUILD_NUMBER}" \
+                        echo "Attempting to create stack ${CfnStackRoot}-Ec2Auto..."
+                        aws --region "${AwsRegion}" cloudformation create-stack --stack-name "${CfnStackRoot}-Ec2Auto" \
                           --disable-rollback --capabilities CAPABILITY_NAMED_IAM \
                           --template-url "${TemplateUrl}" \
-                          --parameters file://sonar.auto.parms.json
+                          --parameters file://sonar.ec2.auto.parms.json
 
-                        aws cloudformation wait stack-create-complete --stack-name ${CfnStackRoot}-ParAuto-${BUILD_NUMBER} --region ${AwsRegion}
+                        aws cloudformation wait stack-create-complete --stack-name ${CfnStackRoot}-Ec2Auto --region ${AwsRegion}
                     '''
                 }
             }
-        }
-    }
-}
+         }
+      }
+   }

@@ -1,0 +1,373 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This template coordinates the running of the Sonarqube S3, IAM, ELB, and RDS templates.",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Child Template URLs"
+          },
+          "Parameters": [
+            "SgTemplateUri",
+            "EfsTemplate",
+            "RdsTemplateUri",
+            "BucketTemplate",
+            "IamTemplate"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Bucket Options"
+          },
+          "Parameters": [
+            "SonarqubeBackupBucket",
+            "FinalExpirationDays",
+            "ReportingBucket",
+            "BucketInventoryTracking"
+          ]
+        },
+        {
+          "Label": {
+            "default": "DB Connection Info"
+          },
+          "Parameters": [
+            "PgsqlVersion",
+            "DbInstanceType",
+            "DbDataSize",
+            "DbSnapshotId",
+            "DbInstanceName",
+            "DbNodeName",
+            "DbAdminName",
+            "DbAdminPass"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Rev-Proxy Info"
+          },
+          "Parameters": [
+            "ProxyPrettyName",
+            "SonarqubeListenerCert",
+            "SonarqubeServicePort",
+            "ElbSubnets",
+            "BackendTimeout"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Miscellaneous Info"
+          },
+          "Parameters": [
+            "ServiceTld",
+            "TargetVPC",
+            "RolePrefix",
+            "HaSubnets"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "FinalExpirationDays": {
+          "default": "Maximum Retention"
+        },
+        "RetainIncompleteDays": {
+          "default": "Cleanup Incompletes"
+        },
+        "SonarqubeBackupBucket": {
+          "default": "Name for Backup Bucket"
+        },
+        "TierToS3Days": {
+          "default": "Tier to Glacier"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "BucketInventoryTracking": {
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "(Optional) Whether to enable generic bucket inventory-tracking. Requires setting of the 'ReportingBucket' parameter.",
+      "Type": "String"
+    },
+    "BucketTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's S3 bucket(s).",
+      "Type": "String"
+    },
+    "DbAdminName": {
+      "AllowedPattern": "^[a-z][a-z0-9-]*[a-z0-9]",
+      "Description": "Name of the SonarQube master database-user.",
+      "Type": "String"
+    },
+    "DbAdminPass": {
+      "Description": "Password of the SonarQube master database-user.",
+      "NoEcho": "True",
+      "Type": "String"
+    },
+    "DbDataSize": {
+      "ConstraintDescription": "Must be between 5GB and 16384GB.",
+      "Default": "5",
+      "Description": "Size in GiB of the RDS table-space to create.",
+      "MaxValue": "16384",
+      "MinValue": "5",
+      "Type": "Number"
+    },
+    "DbInstanceName": {
+      "AllowedPattern": "^[a-z][a-z0-9-]*[a-z0-9]",
+      "Description": "Instance-name of the SonarQube database.",
+      "Type": "String"
+    },
+    "DbInstanceType": {
+      "AllowedValues": [
+        "db.t2.micro",
+        "db.t2.small",
+        "db.t2.medium",
+        "db.t2.large",
+        "db.t2.xlarge",
+        "db.t2.2xlarge",
+        "db.m4.large",
+        "db.m4.xlarge",
+        "db.m4.2xlarge",
+        "db.m4.4xlarge",
+        "db.m4.10xlarge",
+        "db.m3.medium",
+        "db.m3.large",
+        "db.m3.xlarge",
+        "db.m3.2xlarge",
+        "db.m3.4xlarge",
+        "db.r4.large",
+        "db.r4.xlarge",
+        "db.r4.2xlarge",
+        "db.r4.4xlarge",
+        "db.r4.8xlarge",
+        "db.r3.large",
+        "db.r3.xlarge",
+        "db.r3.2xlarge",
+        "db.r3.4xlarge",
+        "db.r3.8xlarge"
+      ],
+      "Default": "db.t2.small",
+      "Description": "Amazon RDS instance type",
+      "Type": "String"
+    },
+    "DbNodeName": {
+      "Description": "NodeName of the SonarQube database.",
+      "Type": "String"
+    },
+    "DbSnapshotId": {
+      "AllowedPattern": "^$|^arn:.*$",
+      "Default": "",
+      "Description": "(Optional) RDS snapshot-ARN to clone new database from.",
+      "Type": "String"
+    },
+    "EfsTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates the EFS service to host SonarQube's persistent data.",
+      "Type": "String"
+    },
+    "FinalExpirationDays": {
+      "ConstraintDescription": "Must be an integer value greater than '0'.",
+      "Default": "30",
+      "Description": "Number of days to retain objects before aging them out of the bucket",
+      "Type": "Number"
+    },
+    "IamTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's IAM role(s).",
+      "Type": "String"
+    },
+    "PgsqlVersion": {
+      "AllowedValues": [
+        "9.6.6",
+        "9.6.5",
+        "9.6.3",
+        "9.6.2",
+        "9.6.1",
+        "9.5.10",
+        "9.5.9",
+        "9.5.7",
+        "9.5.6",
+        "9.5.4",
+        "9.5.2"
+      ],
+      "Default": "9.6.6",
+      "Description": "The X.Y.Z version of the PostGreSQL database to deploy.",
+      "Type": "String"
+    },
+    "PluginsBucket":{
+      "AllowedPattern": "^[a-z0-9].*$",
+      "Description": "S3 bucket hosting Sonarqube installation's feature-extending plugins.",
+      "Type": "String"
+    },
+    "ReportingBucket": {
+      "AllowedPattern": "^arn:.*$|^$",
+      "ConstraintDescription": "String must start with 'arn:' (or be left wholly blank).",
+      "Default": "",
+      "Description": "(Optional) Destination for storing analytics data. Must be provided in ARN format.",
+      "Type": "String"
+    },
+    "RdsTemplateUri": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's RDS database.",
+      "Type": "String"
+    },
+    "RolePrefix": {
+      "Description": "Prefix to apply to IAM role to make things a bit prettier (optional).",
+      "Type": "String"
+    },
+    "ServiceTld": {
+      "Default": "amazonaws.com",
+      "Description": "TLD of the created EFS-endpoint.",
+      "Type": "String"
+    },
+    "SgTemplateUri": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates SonarQube's security groups.",
+      "Type": "String"
+    },
+    "SonarqubeBackupBucket": {
+      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]*$|^$",
+      "Description": "S3 Bucket to host Sonarqube content. (Optional parameter)",
+      "Type": "String"
+    },
+    "HaSubnets": {
+      "Description": "Select three subnets - each from different Availability Zones.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "ElbTemplate": {
+      "AllowedPattern": "^$|^http://.*$|^https://.*$",
+      "Description": "URI for the template that creates the ELB providing public-to-private reverse-proxy service.",
+      "Type": "String"
+    },
+    "ElbSubnets": {
+      "Description": "Public-facing subnets for ELB to proxy requests from.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "ProxyPrettyName": {
+      "Description": "A short, human-friendly label to assign to the ELB (no capital letters).",
+      "Type": "String"
+    },
+    "SonarqubeListenerCert": {
+      "Default": "",
+      "Description": "Name/ID of the ACM-managed SSL Certificate to protect public listener.",
+      "Type": "String"
+    },
+    "SonarqubeServicePort": {
+      "Default": "9000",
+      "Description": "TCP Port number that the Sonarqube host listens to.",
+      "MaxValue": "65535",
+      "Type": "Number"
+    },
+    "BackendTimeout": {
+      "Default": "600",
+      "Description": "How long - in seconds - back-end connection may be idle before attempting session-cleanup",
+      "MaxValue": "3600",
+      "MinValue": "60",
+      "Type": "Number"
+    },
+    "TargetVPC": {
+      "AllowedPattern": "^vpc-[0-9a-f]*$",
+      "Description": "ID of the VPC to deploy cluster nodes into.",
+      "Type": "AWS::EC2::VPC::Id"
+    }
+  },
+  "Resources": {
+    "BackupBucketRes": {
+      "Properties": {
+        "Parameters": {
+          "BucketInventoryTracking": { "Ref": "BucketInventoryTracking" },
+          "FinalExpirationDays": { "Ref": "FinalExpirationDays" },
+          "ReportingBucket": { "Ref": "ReportingBucket" },
+          "RetainIncompleteDays": "3",
+          "SonarqubeBackupBucket": { "Ref": "SonarqubeBackupBucket" },
+          "TierToS3Days": "7"
+        },
+        "TemplateURL": { "Ref": "BucketTemplate" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "ElbRes": {
+      "Properties": {
+        "Parameters": {
+          "BackendTimeout": { "Ref": "BackendTimeout" },
+          "HaSubnets": {
+            "Fn::Join": [
+              ",",
+              { "Ref": "ElbSubnets" }
+            ]
+          },
+          "ProxyPrettyName": { "Ref": "ProxyPrettyName" },
+          "SecurityGroupIds": {
+            "Fn::Join": [
+              ",",
+              [
+                { "Fn::GetAtt": [ "SgRes", "Outputs.AppSg" ] }
+              ]
+            ]
+          },
+          "SonarqubeListenerCert": { "Ref": "SonarqubeListenerCert" },
+          "SonarqubeListenPort": "443",
+          "SonarqubeServicePort": { "Ref": "SonarqubeServicePort" },
+          "TargetVPC": { "Ref": "TargetVPC" }
+        },
+        "TemplateURL": { "Ref": "ElbTemplate" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "IamRes": {
+      "Properties": {
+        "Parameters": {
+          "BackupBucketArn": {
+            "Fn::GetAtt": [ "BackupBucketRes", "Outputs.SonarqubeBucketArn" ]
+          },
+          "PluginsBucket": { "Ref": "PluginsBucket" },
+          "RolePrefix": { "Ref": "RolePrefix" },
+          "ServiceTld": { "Ref": "ServiceTld" }
+        },
+        "TemplateURL": { "Ref": "IamTemplate" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "RdsRes": {
+      "Properties": {
+        "Parameters": {
+          "DbAdminName": { "Ref": "DbAdminName" },
+          "DbAdminPass": { "Ref": "DbAdminPass" },
+          "DbDataSize": { "Ref": "DbDataSize" },
+          "DbInstanceName": { "Ref": "DbInstanceName" },
+          "DbInstanceType": { "Ref": "DbInstanceType" },
+          "DbIsMultiAz": "true",
+          "DbNodeName": { "Ref": "DbNodeName" },
+          "DbSecurityGroup": { "Fn::GetAtt": [ "SgRes", "Outputs.RdsSg" ] },
+          "DbSnapshotId": { "Ref": "DbSnapshotId" },
+          "DbSubnets": {
+            "Fn::Join": [
+              ",",
+              { "Ref": "HaSubnets" }
+            ]
+          },
+          "PgsqlVersion": { "Ref": "PgsqlVersion" },
+          "TargetVPC": { "Ref": "TargetVPC" }
+        },
+        "TemplateURL": { "Ref": "RdsTemplateUri" }
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    },
+    "SgRes": {
+      "Properties": {
+        "Parameters": {
+          "TargetVPC": { "Ref": "TargetVPC" }
+        },
+        "TemplateURL": { "Ref": "SgTemplateUri" },
+        "TimeoutInMinutes": "10"
+      },
+      "Type": "AWS::CloudFormation::Stack"
+    }
+  }
+}

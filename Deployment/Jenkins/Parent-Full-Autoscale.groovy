@@ -28,7 +28,7 @@ pipeline {
         string(name: 'GitProjUrl', description: 'SSH URL from which to download the Jenkins git project')
         string(name: 'GitProjBranch', description: 'Project-branch to use from the Jenkins git project')
         string(name: 'CfnStackRoot', description: 'Unique token to prepend to all stack-element names')
-        string(name: 'TemplateUrl', description: 'S3-hosted URL for the EC2 template file')
+        string(name: 'TemplateUrl', description: 'S3-hosted URL for the Parent Autoscale template file')
         string(name: 'BucketTemplate', description: 'S3-hosted URL for the template that creates SonarQubes S3 bucket(s)')
         string(name: 'Ec2Template', description: 'S3-hosted URL for the template that creates the EC2 instance to host the SonarQube application')
         string(name: 'EfsTemplate', description: 'S3-hosted URL for the template that creates the EFS service to host SonarQubes persistent data')
@@ -348,10 +348,10 @@ pipeline {
                     ]
                 ) {
                     sh '''#!/bin/bash
-                        echo "Attempting to delete any active ${CfnStackRoot}-ParAuto-${BUILD_NUMBER} stacks... "
-                        aws --region "${AwsRegion}" cloudformation delete-stack --stack-name "${CfnStackRoot}-ParAuto-${BUILD_NUMBER}"
+                        echo "Attempting to delete any active ${CfnStackRoot}-ParAuto stacks... "
+                        aws --region "${AwsRegion}" cloudformation delete-stack --stack-name "${CfnStackRoot}-ParAuto"
 
-                        aws cloudformation wait stack-delete-complete --stack-name ${CfnStackRoot}-ParAuto-${BUILD_NUMBER} --region ${AwsRegion}
+                        aws cloudformation wait stack-delete-complete --stack-name ${CfnStackRoot}-ParAuto --region ${AwsRegion}
                     '''
                 }
             }
@@ -364,13 +364,13 @@ pipeline {
                     ]
                 ) {
                     sh '''#!/bin/bash
-                        echo "Attempting to create stack ${CfnStackRoot}-ParAuto-${BUILD_NUMBER}..."
-                        aws --region "${AwsRegion}" cloudformation create-stack --stack-name "${CfnStackRoot}-ParAuto-${BUILD_NUMBER}" \
+                        echo "Attempting to create stack ${CfnStackRoot}-ParAuto..."
+                        aws --region "${AwsRegion}" cloudformation create-stack --stack-name "${CfnStackRoot}-ParAuto" \
                           --disable-rollback --capabilities CAPABILITY_NAMED_IAM \
                           --template-url "${TemplateUrl}" \
                           --parameters file://sonar.parent.auto.parms.json
 
-                        aws cloudformation wait stack-create-complete --stack-name ${CfnStackRoot}-ParAuto-${BUILD_NUMBER} --region ${AwsRegion}
+                        aws cloudformation wait stack-create-complete --stack-name ${CfnStackRoot}-ParAuto --region ${AwsRegion}
                     '''
                 }
             }
