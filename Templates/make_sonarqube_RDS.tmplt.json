@@ -13,6 +13,22 @@
       "Fn::Not": [
         { "Fn::Equals": [ { "Ref": "DbSnapshotId" }, "" ] }
       ]
+    },
+    "UsePgSqlMinor": {
+      "Fn::Equals": [
+        {
+          "Fn::Select": [
+            "0",
+            {
+              "Fn::Split": [
+                ".",
+                { "Ref": "PgsqlVersion" }
+              ]
+            }
+          ]
+        },
+        "9"
+      ]
     }
   },
   "Description": "This template deploys a small, single- or multi-AZ PGSQL database to support Sonarqube.",
@@ -232,6 +248,56 @@
         "VPCSecurityGroups": { "Ref": "DbSecurityGroup" }
       },
       "Type": "AWS::RDS::DBInstance"
+    },
+    "RDSdbParmGrp": {
+      "Properties": {
+        "Description": "Parameters used to modify database behavior and performance characteristics",
+        "Family": {
+          "Fn::Join": [
+            "",
+            [
+              "postgres",
+              {
+                "Fn::Select": [
+                  "0",
+                  {
+                    "Fn::Split": [
+                      ".",
+                      { "Ref": "PgsqlVersion" }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Fn::If": [
+                  "UsePgSqlMinor",
+                  {
+                    "Fn::Join": [
+                      "",
+                      [
+                        ".",
+                        {
+                          "Fn::Select": [
+                            "1",
+                            {
+                              "Fn::Split": [
+                                ".",
+                                { "Ref": "PgsqlVersion" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    ]
+                  },
+                  { "Ref": "AWS::NoValue" }
+                ]
+              }
+            ]
+          ]
+        }
+      },
+      "Type": "AWS::RDS::DBParameterGroup"
     },
     "RDSdbSubnetGroup": {
       "Type" : "AWS::RDS::DBSubnetGroup",
