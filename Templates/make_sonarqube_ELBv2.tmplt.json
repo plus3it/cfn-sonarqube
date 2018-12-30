@@ -1,11 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": {
-    "SetInstanceId": {
-      "Fn::Not": [
-        { "Fn::Equals": [ { "Ref": "SonarqubeInstanceId" }, "" ] }
-      ]
-    },
     "SetPrettyName": {
       "Fn::Not": [
         { "Fn::Equals": [ { "Ref": "ProxyPrettyName" }, "" ] }
@@ -18,7 +13,6 @@
       "ParameterGroups": [
         {
           "Parameters": [
-            "SonarqubeInstanceId",
             "ProxyPrettyName",
             "TargetVPC",
             "HaSubnets",
@@ -81,10 +75,6 @@
     "SecurityGroupIds": {
       "Description": "List of security groups to apply to the ELB.",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
-    },
-    "SonarqubeInstanceId": {
-      "Description": "ID of the EC2-instance this template should create a proxy for.",
-      "Type": "String"
     },
     "SonarqubeListenerCert": {
       "Default": "",
@@ -194,18 +184,12 @@
         },
         "Port": { "Ref": "SonarqubeServicePort" },
         "Protocol": "HTTP",
-        "Targets": {
-          "Fn::If": [
-            "SetInstanceId",
-            [
-              {
-                "Id": { "Ref": "SonarqubeInstanceId" },
-                "Port": { "Ref": "SonarqubeServicePort" }
-              }
-            ],
-            { "Ref": "AWS::NoValue" }
-          ]
-        },
+        "TargetGroupAttributes": [
+          {
+            "Key" : "stickiness.enabled",
+            "Value" : "true"
+          }
+        ],
         "UnhealthyThresholdCount": "2",
         "VpcId": { "Ref": "TargetVPC" }
       },
