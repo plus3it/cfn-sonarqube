@@ -10,7 +10,6 @@
           },
           "Parameters": [
             "SgTemplateUri",
-            "EfsTemplate",
             "RdsTemplateUri",
             "BucketTemplate",
             "IamTemplate",
@@ -122,14 +121,8 @@
         "FinalExpirationDays": {
           "default": "Maximum Retention"
         },
-        "RetainIncompleteDays": {
-          "default": "Cleanup Incompletes"
-        },
         "SonarqubeBackupBucket": {
           "default": "Name for Backup Bucket"
-        },
-        "TierToS3Days": {
-          "default": "Tier to Glacier"
         }
       }
     }
@@ -239,11 +232,6 @@
     "Ec2Template": {
       "AllowedPattern": "^$|^http://.*$|^https://.*$",
       "Description": "URI for the template that creates the EC2 instance to host the SonarQube application.",
-      "Type": "String"
-    },
-    "EfsTemplate": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URI for the template that creates the EFS service to host SonarQube's persistent data.",
       "Type": "String"
     },
     "ElbSubnets": {
@@ -554,7 +542,7 @@
           "TierToS3Days": "7"
         },
         "TemplateURL": { "Ref": "BucketTemplate" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     },
@@ -636,7 +624,7 @@
           "WatchmakerEnvironment": { "Ref": "WatchmakerEnvironment" }
         },
         "TemplateURL": { "Ref": "Ec2Template" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     },
@@ -668,7 +656,7 @@
           "TargetVPC": { "Ref": "TargetVPC" }
         },
         "TemplateURL": { "Ref": "ElbTemplate" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     },
@@ -683,7 +671,7 @@
           "ServiceTld": { "Ref": "ServiceTld" }
         },
         "TemplateURL": { "Ref": "IamTemplate" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     },
@@ -718,7 +706,7 @@
           "TargetVPC": { "Ref": "TargetVPC" }
         },
         "TemplateURL": { "Ref": "SgTemplateUri" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     }

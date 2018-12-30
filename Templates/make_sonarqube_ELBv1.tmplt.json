@@ -79,7 +79,7 @@
         "ConnectionSettings": {
           "IdleTimeout": { "Ref": "BackendTimeout" }
         },
-        "CrossZone": "true",
+        "CrossZone": true,
         "HealthCheck": {
           "HealthyThreshold": "5",
           "Interval": "30",

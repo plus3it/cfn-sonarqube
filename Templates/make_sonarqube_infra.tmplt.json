@@ -10,7 +10,6 @@
           },
           "Parameters": [
             "SgTemplateUri",
-            "EfsTemplate",
             "RdsTemplateUri",
             "BucketTemplate",
             "IamTemplate"
@@ -70,14 +69,8 @@
         "FinalExpirationDays": {
           "default": "Maximum Retention"
         },
-        "RetainIncompleteDays": {
-          "default": "Cleanup Incompletes"
-        },
         "SonarqubeBackupBucket": {
           "default": "Name for Backup Bucket"
-        },
-        "TierToS3Days": {
-          "default": "Tier to Glacier"
         }
       }
     }
@@ -161,11 +154,6 @@
       "AllowedPattern": "^$|^arn:.*$",
       "Default": "",
       "Description": "(Optional) RDS snapshot-ARN to clone new database from.",
-      "Type": "String"
-    },
-    "EfsTemplate": {
-      "AllowedPattern": "^$|^http://.*$|^https://.*$",
-      "Description": "URI for the template that creates the EFS service to host SonarQube's persistent data.",
       "Type": "String"
     },
     "FinalExpirationDays": {
@@ -286,7 +274,7 @@
           "TierToS3Days": "7"
         },
         "TemplateURL": { "Ref": "BucketTemplate" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     },
@@ -315,7 +303,7 @@
           "TargetVPC": { "Ref": "TargetVPC" }
         },
         "TemplateURL": { "Ref": "ElbTemplate" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     },
@@ -330,7 +318,7 @@
           "ServiceTld": { "Ref": "ServiceTld" }
         },
         "TemplateURL": { "Ref": "IamTemplate" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     },
@@ -365,7 +353,7 @@
           "TargetVPC": { "Ref": "TargetVPC" }
         },
         "TemplateURL": { "Ref": "SgTemplateUri" },
-        "TimeoutInMinutes": "10"
+        "TimeoutInMinutes": 10
       },
       "Type": "AWS::CloudFormation::Stack"
     }

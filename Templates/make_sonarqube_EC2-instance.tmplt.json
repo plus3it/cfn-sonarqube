@@ -42,19 +42,7 @@
     }
   },
   "Description": "This template deploys a STIG-hardened Enterprise Linux 7 instance to host the Sonarqube service.",
-  "Mappings": {
-    "Distro2RootDevice": {
-      "AmazonLinux": {
-        "DeviceName": "xvda"
-      },
-      "CentOS": {
-        "DeviceName": "sda1"
-      },
-      "RedHat": {
-        "DeviceName": "sda1"
-      }
-    }
-  },
+  "Mappings": {},
   "Metadata": {
     "AWS::CloudFormation::Interface": {}
   },
@@ -73,7 +61,7 @@
     "AmiId": {
       "AllowedPattern": "^ami-[0-9a-z]{8}$|^ami-[0-9a-z]{17}$",
       "Description": "ID of the AMI to launch",
-      "Type": "String"
+      "Type": "AWS::EC2::Image::Id"
     },
     "BackupBucket": {
       "Description": "Name of S3 bucket used for Sonarqube backup tasks.",
@@ -905,7 +893,7 @@
           {
             "DeviceName": "/dev/sda1",
             "Ebs": {
-              "DeleteOnTermination": "true",
+              "DeleteOnTermination": true,
               "VolumeType": "gp2"
             }
           }
@@ -925,8 +913,8 @@
             "AssociatePublicIpAddress": {
               "Fn::If": [
                 "AssignPublicIp",
-                "true",
-                "false"
+                true,
+                false
               ]
             },
             "DeviceIndex": "0",

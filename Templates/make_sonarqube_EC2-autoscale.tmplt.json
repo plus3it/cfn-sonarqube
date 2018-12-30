@@ -54,7 +54,6 @@
           "Parameters": [
             "AmiId",
             "InstanceType",
-            "InstanceRole",
             "KeyPairName",
             "NoReboot",
             "NoUpdates",
@@ -133,7 +132,7 @@
     "AmiId": {
       "AllowedPattern": "^ami-[0-9a-z]{8}$|^ami-[0-9a-z]{17}$",
       "Description": "ID of the AMI to launch",
-      "Type": "String"
+      "Type": "AWS::EC2::Image::Id"
     },
     "BackupBucket": {
       "Description": "Name of S3 bucket used for Sonarqube backup tasks.",
@@ -446,7 +445,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "PropagateAtLaunch": "true",
+            "PropagateAtLaunch": true,
             "Value": {
               "Fn::Join": [
                 "",
@@ -463,10 +462,10 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "UpdatePolicy": {
         "AutoScalingRollingUpdate": {
-          "MaxBatchSize": "2",
-          "MinInstancesInService": "1",
+          "MaxBatchSize": 2,
+          "MinInstancesInService": 1,
           "PauseTime": "PT30M",
-          "WaitOnResourceSignals": "true"
+          "WaitOnResourceSignals": true
         }
       }
     },
@@ -1078,12 +1077,12 @@
         "ToggleCfnInitUpdate": { "Ref": "ToggleCfnInitUpdate" }
       },
       "Properties": {
-        "AssociatePublicIpAddress": "false",
+        "AssociatePublicIpAddress": false,
         "BlockDeviceMappings": [
           {
             "DeviceName": "/dev/sda1",
             "Ebs": {
-              "DeleteOnTermination": "true",
+              "DeleteOnTermination": true,
               "VolumeType": "gp2"
             }
           }
