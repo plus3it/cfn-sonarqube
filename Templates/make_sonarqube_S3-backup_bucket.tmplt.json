@@ -146,7 +146,7 @@
                   "Format": "CSV",
                   "Prefix": "StorageReporting/Inventory"
                 },
-                "Enabled": "true",
+                "Enabled": true,
                 "IncludedObjectVersions": "Current",
                 "Prefix": "Backups/",
                 "ScheduleFrequency": "Weekly"
