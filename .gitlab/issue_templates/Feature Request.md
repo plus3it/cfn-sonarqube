@@ -17,4 +17,4 @@
 
 
 
-/label ~enhancement ~feature\ request
+/label ~enhancement ~"feature request"
