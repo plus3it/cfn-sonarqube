@@ -24,11 +24,10 @@ It is generally expected that the use of the various, individual-service templat
 
 In order to use the "parent" template, it is recommended that the child templates be hosted in an S3 bucket separate from the one created for backups by this stack-set. The template-hosting bucket may be public or not. The files may be set to public or not. CFn typically has sufficient privileges to read the templates from a bucket without requiring the containing bucket or files being set public. Use of S3 for hosting eliminates the need to find other hosting-locations or sort out access-particulars of those hosting locations.
 
-The EC2-related templates currently require that the scripts be anonymously curlable. The scripts can still be hosted in a non-public S3 bucket, but the scripts' file-ACLs will need to allow `public-read`. This may change in future releases &mdash; likely via an enhancement to the IAM template.
+The EC2-related templates currently require that the scripts be anonymously `curl`-able. The scripts can still be hosted in a non-public S3 bucket, but the scripts' file-ACLs will need to allow `public-read`. This may change in future releases &mdash; likely via an enhancement to the IAM template.
 
-The EC2 scripts will also pull down Sonarqube plugins from an S3 bucket. This bucket may be set to public-read or not. Similarly, the plugin files may be set to public-read or not. The templates create an IAM instance-role that is attached to the EC2 instance. This instance-role will provide adequate access from the created EC2-instace to a named-bucket in order for an `s3 sync` operation to be performed.
+The EC2 scripts will also pull down Sonarqube plugins from an S3 bucket. This bucket may be set to public-read or not. Similarly, the plugin files may be set to public-read or not. The templates create an IAM instance-role that is attached to the EC2 instance. This instance-role will provide adequate access from the created EC2-instance to a named-bucket in order for an `s3 sync` operation to be performed.
 
 Note that the immediately-preceding means that the design-expectation is that any new plugins will be pushed into the named-bucket and a redeployment of the EC2 instance will result in the plugins being installed. Any plugin configuration will have to be performed by the operator once the new instance has deployed. Plugin configuration-actions are typically persisted via the stack-sets'RDS-hosted PGSQL database.
 
 These templates do _not_ include Route53 functionality. It is assumed that the requisite Route53 or other DNS alias will be configured separate from the instantiation of the public-facing ELB.
-
