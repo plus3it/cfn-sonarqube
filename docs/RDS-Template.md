@@ -4,4 +4,4 @@ Sonarqube uses a database to host configuration, tracking and other, non-BLOB da
 
 This template can also be used to stand up a clone of an existing RDS-deployment. To do so, add the ARN of the source-stack's most recent RDS snapshot. This can be one of the daily snapshots - or, probably better, a manual snapshot completed _just_ before launching the parent stack.
 
-Note: Whether the resultan RDS configuration is multi-AZ or not depends on the options selected by the template-user. Selecting the single-AZ option lowers accumulated AWS service charges but does so at the expense of design-resiliency.
+Note: Whether the resultant RDS configuration is multi-AZ or not depends on the options selected by the template-user. Selecting the single-AZ option lowers accumulated AWS service charges but does so at the expense of design-resiliency.
